@@ -35,6 +35,7 @@ export function buildTimeSlots(start, end, intervalMinutes = 60) {
 
 export function buildCurrentMonth(availableDays) {
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const year = today.getFullYear();
   const month = today.getMonth();
   const firstDay = new Date(year, month, 1);
@@ -53,7 +54,7 @@ export function buildCurrentMonth(availableDays) {
     cells.push({
       dayName,
       dayNumber,
-      isAvailable: availableDays.includes(dayName),
+      isAvailable: date >= today && availableDays.includes(dayName),
     });
   }
 

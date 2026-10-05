@@ -1,7 +1,6 @@
 "use client";
 
 import AppointmentsWidget from "@/components/dashboard/widgets/AppointmentsWidget";
-import QuickActionsWidget from "@/components/dashboard/widgets/QuickActionsWidget";
 import RecentClientsWidget from "@/components/dashboard/widgets/RecentClientsWidget";
 import StatCard from "@/components/dashboard/widgets/StatCard";
 import useDashboardSummary from "@/hooks/useDashboardSummary";
@@ -12,7 +11,7 @@ import {
   faTrophy,
 } from "@/lib/fontawesome";
 
-export default function DashboardHome({ onViewChange }) {
+export default function DashboardHome() {
   const { error, isLoading, summary } = useDashboardSummary();
   const stats = [
     {
@@ -42,7 +41,7 @@ export default function DashboardHome({ onViewChange }) {
   ];
 
   return (
-    <div className="grid gap-5">
+    <div className="grid min-h-[calc(100dvh-10rem)] gap-5">
       {error ? (
         <p className="rounded-card border border-line bg-surface px-4 py-3 text-sm font-bold text-danger shadow-card">
           {error}
@@ -55,12 +54,10 @@ export default function DashboardHome({ onViewChange }) {
         ))}
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.08fr)_minmax(26rem,0.92fr)]">
+      <div className="grid min-h-[28rem] gap-5 xl:grid-cols-2 xl:items-stretch">
         <AppointmentsWidget appointments={summary.todayAppointments} />
-        <QuickActionsWidget onViewChange={onViewChange} />
+        <RecentClientsWidget clients={summary.recentClients} />
       </div>
-
-      <RecentClientsWidget clients={summary.recentClients} />
     </div>
   );
 }

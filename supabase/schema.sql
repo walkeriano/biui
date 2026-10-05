@@ -19,6 +19,15 @@ create unique index if not exists professional_pages_user_id_key
 
 alter table public.professional_pages enable row level security;
 
+drop policy if exists "Public pages are readable when published"
+  on public.professional_pages;
+drop policy if exists "Professionals can insert their page"
+  on public.professional_pages;
+drop policy if exists "Professionals can update their page"
+  on public.professional_pages;
+drop policy if exists "Professionals can delete their page"
+  on public.professional_pages;
+
 create policy "Public pages are readable when published"
   on public.professional_pages
   for select
@@ -43,6 +52,15 @@ create policy "Professionals can delete their page"
 insert into storage.buckets (id, name, public)
 values ('profesional-assets', 'profesional-assets', true)
 on conflict (id) do nothing;
+
+drop policy if exists "Professional assets are publicly readable"
+  on storage.objects;
+drop policy if exists "Professionals can upload their own assets"
+  on storage.objects;
+drop policy if exists "Professionals can update their own assets"
+  on storage.objects;
+drop policy if exists "Professionals can delete their own assets"
+  on storage.objects;
 
 create policy "Professional assets are publicly readable"
   on storage.objects
@@ -98,12 +116,32 @@ create index if not exists appointments_professional_user_id_idx
 create index if not exists appointments_appointment_at_idx
   on public.appointments(appointment_at);
 
+create unique index if not exists appointments_active_slot_key
+  on public.appointments(professional_user_id, appointment_at)
+  where status <> 'cancelada';
+
 alter table public.appointments enable row level security;
 
+drop policy if exists "Customers can create appointments on published pages"
+  on public.appointments;
 drop policy if exists "Professionals can read their appointments"
   on public.appointments;
 drop policy if exists "Professionals can update their appointments"
   on public.appointments;
+
+create policy "Customers can create appointments on published pages"
+  on public.appointments
+  for insert
+  with check (
+    status = 'pendiente'
+    and exists (
+      select 1
+      from public.professional_pages page
+      where page.id = professional_page_id
+        and page.user_id = professional_user_id
+        and page.published = true
+    )
+  );
 
 create policy "Professionals can read their appointments"
   on public.appointments

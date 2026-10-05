@@ -11,7 +11,6 @@ import useCurrentPublicPageLink from "@/hooks/useCurrentPublicPageLink";
 import { useAuth } from "@/context/AuthContext";
 import {
   faBars,
-  faChevronDown,
   faUpRightFromSquare,
   faXmark,
 } from "@/lib/fontawesome";
@@ -101,7 +100,6 @@ export default function DashboardShell() {
                   {initials}
                 </div>
                 <p className="text-sm font-bold text-foreground">{displayName}</p>
-                <FontAwesomeIcon icon={faChevronDown} className="size-3 text-muted" />
               </div>
             </div>
           </div>

@@ -2,7 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarDays, faCheck } from "@/lib/fontawesome";
+import {
+  faCalendarDays,
+  faCheck,
+  faClock,
+  faEnvelope,
+  faPhone,
+  faUser,
+} from "@/lib/fontawesome";
 import {
   buildAvailability,
   calendarDays,
@@ -23,7 +30,77 @@ export default function PublicBookingSection({ page }) {
     availability.month.firstAvailableDay,
   );
   const [selectedTime, setSelectedTime] = useState(availability.slots[0] ?? "");
+  const [selectedService, setSelectedService] = useState(
+    page.services[0]?.name ?? "",
+  );
+  const [formData, setFormData] = useState({
+    customerEmail: "",
+    customerName: "",
+    customerPhone: "",
+    notes: "",
+  });
+  const [status, setStatus] = useState({ message: "", state: "idle" });
   const selectedDayLabel = formatSelectedDay(selectedDay);
+  const canSubmit = Boolean(
+    selectedDay &&
+    selectedTime &&
+    selectedService &&
+    formData.customerName.trim() &&
+    formData.customerPhone.trim() &&
+    status.state !== "submitting",
+  );
+
+  const updateField = (key, value) => {
+    setFormData((current) => ({ ...current, [key]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!canSubmit) {
+      setStatus({
+        message: "Completa nombre, telefono, servicio, dia y horario.",
+        state: "error",
+      });
+      return;
+    }
+
+    setStatus({ message: "Creando tu reserva...", state: "submitting" });
+
+    const response = await fetch("/api/appointments", {
+      body: JSON.stringify({
+        ...formData,
+        appointmentAt: buildAppointmentIso(selectedDay, selectedTime),
+        selectedTime,
+        serviceName: selectedService,
+        slug: page.slug,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      setStatus({
+        message: result.error || "No se pudo crear la reserva.",
+        state: "error",
+      });
+      return;
+    }
+
+    setFormData({
+      customerEmail: "",
+      customerName: "",
+      customerPhone: "",
+      notes: "",
+    });
+    setStatus({
+      message: "Reserva creada correctamente. El profesional la vera en su panel.",
+      state: "success",
+    });
+  };
 
   return (
     <section id="reservar" className="bg-[#f7fbf7] px-4 py-16 sm:px-6 lg:px-8">
@@ -44,7 +121,10 @@ export default function PublicBookingSection({ page }) {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-5 lg:grid-cols-[minmax(0,1fr)_25rem]">
+        <form
+          onSubmit={handleSubmit}
+          className="mt-8 grid gap-5 lg:grid-cols-[minmax(0,1fr)_25rem]"
+        >
           <div className="rounded-card border border-line bg-white p-5 shadow-card">
             <div className="mb-5 flex items-center justify-between">
               <div>
@@ -98,7 +178,22 @@ export default function PublicBookingSection({ page }) {
           </div>
 
           <aside className="rounded-card border border-line bg-white p-5 shadow-card">
-            <p className="text-sm font-bold text-foreground">
+            <label className="block">
+              <span className="text-sm font-bold text-foreground">Servicio</span>
+              <select
+                value={selectedService}
+                onChange={(event) => setSelectedService(event.target.value)}
+                className="mt-2 h-11 w-full rounded-md border border-line bg-white px-3 text-sm font-bold text-foreground outline-none transition focus:border-accent focus:ring-4 focus:ring-accent-soft"
+              >
+                {page.services.map((service) => (
+                  <option key={service.id} value={service.name}>
+                    {service.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <p className="mt-5 text-sm font-bold text-foreground">
               Horarios disponibles
             </p>
             <p className="mt-1 text-xs text-muted">
@@ -148,21 +243,119 @@ export default function PublicBookingSection({ page }) {
                 {page.professional.name}
               </p>
               <p className="mt-1 text-sm text-muted">
+                {selectedService}
+              </p>
+              <p className="mt-1 text-sm text-muted">
                 <span className="capitalize">{selectedDayLabel}</span>
                 {selectedTime ? ` · ${selectedTime}` : ""}
               </p>
             </div>
 
+            <div className="mt-5 grid gap-3">
+              <label className="block">
+                <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-muted">
+                  <FontAwesomeIcon icon={faUser} className="size-3" />
+                  Nombre
+                </span>
+                <input
+                  type="text"
+                  value={formData.customerName}
+                  onChange={(event) => updateField("customerName", event.target.value)}
+                  className="mt-2 h-11 w-full rounded-md border border-line bg-white px-3 text-sm font-bold text-foreground outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent-soft"
+                  placeholder="Tu nombre"
+                  required
+                />
+              </label>
+
+              <label className="block">
+                <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-muted">
+                  <FontAwesomeIcon icon={faPhone} className="size-3" />
+                  Telefono
+                </span>
+                <input
+                  type="tel"
+                  value={formData.customerPhone}
+                  onChange={(event) => updateField("customerPhone", event.target.value)}
+                  className="mt-2 h-11 w-full rounded-md border border-line bg-white px-3 text-sm font-bold text-foreground outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent-soft"
+                  placeholder="+34 600 000 000"
+                  required
+                />
+              </label>
+
+              <label className="block">
+                <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-muted">
+                  <FontAwesomeIcon icon={faEnvelope} className="size-3" />
+                  Email
+                </span>
+                <input
+                  type="email"
+                  value={formData.customerEmail}
+                  onChange={(event) => updateField("customerEmail", event.target.value)}
+                  className="mt-2 h-11 w-full rounded-md border border-line bg-white px-3 text-sm font-bold text-foreground outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent-soft"
+                  placeholder="tu@email.com"
+                />
+              </label>
+
+              <label className="block">
+                <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-muted">
+                  <FontAwesomeIcon icon={faClock} className="size-3" />
+                  Notas
+                </span>
+                <textarea
+                  value={formData.notes}
+                  onChange={(event) => updateField("notes", event.target.value)}
+                  className="mt-2 min-h-20 w-full resize-none rounded-md border border-line bg-white px-3 py-2.5 text-sm font-medium leading-5 text-foreground outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent-soft"
+                  placeholder="Algo que quieras comentar antes de la cita"
+                />
+              </label>
+            </div>
+
+            {status.message ? (
+              <p
+                className={
+                  status.state === "success"
+                    ? "mt-4 rounded-md bg-success-soft px-3 py-2 text-sm font-bold text-success"
+                    : status.state === "error"
+                      ? "mt-4 rounded-md bg-danger-soft px-3 py-2 text-sm font-bold text-danger"
+                      : "mt-4 rounded-md bg-surface-muted px-3 py-2 text-sm font-bold text-muted"
+                }
+              >
+                {status.message}
+              </p>
+            ) : null}
+
             <button
+              type="submit"
+              disabled={!canSubmit}
               className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-md text-sm font-bold text-white transition hover:opacity-90"
-              style={{ backgroundColor: page.theme.secondaryColor }}
+              style={{
+                backgroundColor: canSubmit
+                  ? page.theme.secondaryColor
+                  : `${page.theme.secondaryColor}80`,
+              }}
             >
-              Confirmar reserva
+              {status.state === "submitting" ? "Confirmando..." : "Confirmar reserva"}
               <FontAwesomeIcon icon={faCheck} className="size-4" />
             </button>
           </aside>
-        </div>
+        </form>
       </div>
     </section>
   );
+}
+
+function buildAppointmentIso(dayNumber, time) {
+  const [hours, minutes] = time.split(":").map(Number);
+  const today = new Date();
+  const appointment = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    dayNumber,
+    hours,
+    minutes,
+    0,
+    0,
+  );
+
+  return appointment.toISOString();
 }
