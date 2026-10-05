@@ -12,6 +12,7 @@ export default function EditorPanel({
   handleServiceImage,
   handleImage,
   handleSavePage,
+  hasChanges,
   heroImage,
   isSaving,
   isUploading,
@@ -26,7 +27,11 @@ export default function EditorPanel({
 }) {
   return (
     <section className="grid gap-4">
-      <AppearanceSection data={data} updateData={updateData} />
+      <AppearanceSection
+        data={data}
+        handleImage={handleImage}
+        updateData={updateData}
+      />
       <HeroSection
         data={data}
         handleImage={handleImage}
@@ -64,10 +69,10 @@ export default function EditorPanel({
         <button
           type="button"
           onClick={handleSavePage}
-          disabled={isSaving || isUploading}
+          disabled={!hasChanges || isSaving || isUploading}
           className="mt-4 h-11 w-full rounded-md bg-accent px-4 text-sm font-bold text-white shadow-card transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSaving ? "Publicando..." : "Publicar cambios"}
+          {isSaving ? "Publicando..." : hasChanges ? "Publicar cambios" : "Sin cambios pendientes"}
         </button>
       </article>
     </section>

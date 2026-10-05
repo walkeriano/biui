@@ -25,7 +25,7 @@ export default function AboutSection({
         <ImagePicker
           label="Foto de perfil"
           image={profileImage}
-          onChange={handleImage(setProfileImage)}
+          onChange={handleImage(setProfileImage, "page", "profileImage")}
           onClear={() => setProfileImage("")}
           hint="Recomendado: 400x400px."
         />

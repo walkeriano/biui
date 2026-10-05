@@ -1,85 +1,97 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight, faShieldHalved } from "@/lib/fontawesome";
+import { faArrowRight } from "@/lib/fontawesome";
+import {
+  getButtonClassName,
+  getButtonStyle,
+  getSocialLinks,
+} from "@/components/public-page/theme";
+import SocialIcon from "@/components/public-page/SocialIcon";
 
 export default function PublicHero({ page }) {
+  const socialLinks = getSocialLinks(page.contact);
+
   return (
     <section
       id="inicio"
-      className="relative overflow-hidden bg-white"
+      className="relative min-h-[42rem] overflow-hidden pt-24 lg:min-h-[46rem]"
       style={{
-        background:
-          "linear-gradient(110deg,#fff8ed 0%,#ffffff 48%,#e7f8d9 100%)",
+        backgroundColor: `color-mix(in srgb, ${page.theme.secondaryColor} 12%, white)`,
       }}
     >
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[minmax(0,1fr)_28rem] lg:px-8 lg:py-20">
-        <div className="flex flex-col justify-center">
-          <span className="inline-flex w-fit items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-orange-700">
-            <FontAwesomeIcon icon={faShieldHalved} className="size-3.5" />
-            {page.hero.label}
-          </span>
+      {page.hero.image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={page.hero.image}
+          alt=""
+          className="absolute inset-y-0 right-0 h-full w-full object-cover lg:w-[64%]"
+        />
+      ) : (
+        <div
+          className="absolute inset-y-0 right-0 w-full lg:w-[64%]"
+          style={{
+            background: `radial-gradient(circle at 72% 45%, rgba(255,255,255,0.92), transparent 22rem), linear-gradient(115deg, color-mix(in srgb, ${page.theme.secondaryColor} 8%, white) 0%, color-mix(in srgb, ${page.theme.secondaryColor} 20%, white) 48%, color-mix(in srgb, ${page.theme.secondaryColor} 34%, white) 100%)`,
+          }}
+        />
+      )}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(90deg, color-mix(in srgb, ${page.theme.secondaryColor} 10%, white) 0%, color-mix(in srgb, ${page.theme.secondaryColor} 10%, white) 34%, color-mix(in srgb, ${page.theme.secondaryColor} 8%, transparent) 58%, transparent 78%)`,
+        }}
+      />
+
+      <div className="relative mx-auto grid max-w-7xl px-4 pb-16 pt-12 sm:px-6 lg:px-8 lg:pb-20 lg:pt-20">
+        <div className="max-w-2xl">
+          {page.hero.label ? (
+            <p
+              className="inline-flex rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.18em]"
+              style={{
+                backgroundColor: `color-mix(in srgb, ${page.theme.secondaryColor} 18%, white)`,
+                color: page.theme.secondaryColor,
+              }}
+            >
+              {page.hero.label}
+            </p>
+          ) : null}
           <h1
-            className="mt-5 max-w-3xl text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl"
+            className="mt-6 text-4xl font-bold leading-[1.04] tracking-tight text-[#061923] sm:text-5xl lg:text-6xl"
             style={{ fontFamily: page.theme.titleFont }}
           >
             {page.hero.title}
           </h1>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg">
+          <p className="mt-6 max-w-xl text-lg leading-8 text-[#2d3f49]">
             {page.hero.text}
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a
-              href="#reservar"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-md px-6 text-sm font-bold text-white shadow-card transition hover:opacity-90"
-              style={{ backgroundColor: page.theme.secondaryColor }}
-            >
-              Reservar mi primera cita
-              <FontAwesomeIcon icon={faArrowRight} className="size-3.5" />
-            </a>
-            <a
-              href="#servicios"
-              className="inline-flex h-12 items-center justify-center rounded-md border border-line bg-white px-6 text-sm font-bold text-foreground transition hover:border-accent hover:text-accent"
-            >
-              Ver servicios
-            </a>
-          </div>
-        </div>
-
-        <div className="relative min-h-[28rem] overflow-hidden rounded-card bg-primary shadow-soft">
-          {page.hero.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={page.hero.image}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : (
-            <>
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(84,173,24,0.38),transparent_34%),linear-gradient(140deg,rgba(255,255,255,0.12),transparent_45%)]" />
-              <div className="absolute bottom-0 left-1/2 h-[88%] w-[68%] -translate-x-1/2 rounded-t-full bg-white/12" />
-            </>
-          )}
-          <div className="absolute inset-0 bg-primary/15" />
-          <div className="absolute left-6 top-6 rounded-card bg-white/92 px-4 py-3 shadow-card">
-            <p className="text-xs font-bold text-muted">Disponible hoy</p>
-            <p className="mt-1 text-2xl font-bold text-foreground">6 horarios</p>
-          </div>
-          <div className="absolute bottom-6 left-6 right-6 rounded-card bg-white p-4 shadow-card">
-            <p className="text-sm font-bold text-foreground">
-              {page.professional.name}
-            </p>
-            <p className="mt-1 text-xs text-muted">{page.professional.title}</p>
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              {page.availability.times.slice(0, 3).map((time) => (
-                <span
-                  key={time}
-                  className="rounded-md bg-success-soft px-3 py-2 text-center text-xs font-bold text-success"
+          {socialLinks.length ? (
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              {socialLinks.map(([key, label, , url]) => (
+                <a
+                  key={key}
+                  href={url}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={label}
+                  className="inline-flex size-10 items-center justify-center rounded-full border bg-white/78 text-sm font-bold shadow-card backdrop-blur transition hover:-translate-y-0.5"
+                  style={{
+                    borderColor: `color-mix(in srgb, ${page.theme.secondaryColor} 28%, white)`,
+                    color: page.theme.primaryColor,
+                  }}
                 >
-                  {time}
-                </span>
+                  <SocialIcon platform={key} />
+                </a>
               ))}
             </div>
-          </div>
+          ) : null}
+          <a
+            href="#reservar"
+            className={`mt-7 inline-flex h-14 items-center justify-center gap-4 px-8 text-sm font-bold shadow-card ${getButtonClassName(page.theme.buttonStyle, { pill: true })}`}
+            style={getButtonStyle(page)}
+          >
+            Reservar mi primera cita
+            <FontAwesomeIcon icon={faArrowRight} className="size-3.5" />
+          </a>
         </div>
+
       </div>
     </section>
   );

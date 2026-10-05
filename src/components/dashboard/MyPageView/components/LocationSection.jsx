@@ -10,6 +10,12 @@ const locationFields = [
   ["email", "Email"],
 ];
 
+const socialFields = [
+  ["socialFacebook", "Facebook"],
+  ["socialInstagram", "Instagram"],
+  ["socialYoutube", "YouTube"],
+];
+
 export default function LocationSection({ data, updateData }) {
   return (
     <article className="rounded-card border border-line bg-surface p-4 shadow-card">
@@ -44,6 +50,23 @@ export default function LocationSection({ data, updateData }) {
             />
           </Field>
         ))}
+        <div className="mt-2 border-t border-line pt-4">
+          <p className="mb-3 text-[0.75rem] font-bold text-foreground">
+            Redes sociales
+          </p>
+          <div className="grid gap-3">
+            {socialFields.map(([key, label]) => (
+              <Field key={key} label={label}>
+                <input
+                  value={data[key]}
+                  onChange={(event) => updateData(key, event.target.value)}
+                  className={inputClassName}
+                  placeholder={`https://${label.toLowerCase()}.com/tu-empresa`}
+                />
+              </Field>
+            ))}
+          </div>
+        </div>
       </div>
     </article>
   );

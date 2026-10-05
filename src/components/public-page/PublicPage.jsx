@@ -5,18 +5,18 @@ import PublicHeader from "@/components/public-page/PublicHeader";
 import PublicHero from "@/components/public-page/PublicHero";
 import PublicServices from "@/components/public-page/PublicServices";
 
-export default function PublicPage({ page }) {
+export default function PublicPage({ page, previewMode = false }) {
   return (
     <main
-      className="min-h-screen bg-[#f7fbf7] text-foreground"
+      className="relative min-h-screen bg-[#f7fbf7] text-foreground"
       style={{ fontFamily: page.theme.textFont }}
     >
-      <PublicHeader page={page} />
+      <PublicHeader page={page} previewMode={previewMode} />
       <PublicHero page={page} />
       <PublicServices page={page} />
       <PublicAbout page={page} />
+      <PublicBookingSection page={page} previewMode={previewMode} />
       <PublicContact page={page} />
-      <PublicBookingSection page={page} />
     </main>
   );
 }

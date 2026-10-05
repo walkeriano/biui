@@ -7,11 +7,13 @@ import {
 } from "@/components/dashboard/MyPageView/data";
 import { buildTimeSlots } from "@/lib/availability";
 import { sanitizeSlug } from "@/lib/slug";
+import { normalizeExternalUrl } from "@/components/public-page/theme";
 
 export const defaultProfessional = {
   name: "Laura Martin",
   title: "Psicologa",
   avatarInitials: "LM",
+  logoImage: "",
 };
 
 const defaultTheme = {
@@ -41,6 +43,9 @@ const defaultContact = {
   address: publicPageFallbackData.address,
   phone: publicPageFallbackData.phone,
   email: publicPageFallbackData.email,
+  socialFacebook: publicPageFallbackData.socialFacebook,
+  socialInstagram: publicPageFallbackData.socialInstagram,
+  socialYoutube: publicPageFallbackData.socialYoutube,
 };
 
 const defaultAvailability = {
@@ -60,7 +65,10 @@ export function editorStateToPagePayload({
 
   return {
     slug,
-    professional,
+    professional: {
+      ...professional,
+      logoImage: sanitizeStoredImageUrl(data.logoImage),
+    },
     theme: {
       primaryColor: data.primaryColor,
       secondaryColor: data.secondaryColor,
@@ -89,6 +97,9 @@ export function editorStateToPagePayload({
       address: data.address,
       phone: data.phone,
       email: data.email,
+      socialFacebook: normalizeExternalUrl(data.socialFacebook),
+      socialInstagram: normalizeExternalUrl(data.socialInstagram),
+      socialYoutube: normalizeExternalUrl(data.socialYoutube),
     },
     availability: {
       days: availableDays,
@@ -116,6 +127,7 @@ export function pagePayloadToEditorState(page) {
       primaryColor: page.theme?.primaryColor ?? defaultPageData.primaryColor,
       secondaryColor:
         page.theme?.secondaryColor ?? defaultPageData.secondaryColor,
+      logoImage: sanitizeStoredImageUrl(page.professional?.logoImage),
       titleFont: page.theme?.titleFont ?? defaultPageData.titleFont,
       textFont: page.theme?.textFont ?? defaultPageData.textFont,
       buttonStyle: page.theme?.buttonStyle ?? defaultPageData.buttonStyle,
@@ -133,6 +145,12 @@ export function pagePayloadToEditorState(page) {
       address: page.contact?.address ?? defaultPageData.address,
       phone: page.contact?.phone ?? defaultPageData.phone,
       email: page.contact?.email ?? defaultPageData.email,
+      socialFacebook:
+        page.contact?.socialFacebook ?? defaultPageData.socialFacebook,
+      socialInstagram:
+        page.contact?.socialInstagram ?? defaultPageData.socialInstagram,
+      socialYoutube:
+        page.contact?.socialYoutube ?? defaultPageData.socialYoutube,
       publicSlug: page.slug ?? defaultPageData.publicSlug,
       scheduleStart: page.availability?.start ?? defaultPageData.scheduleStart,
       scheduleEnd: page.availability?.end ?? defaultPageData.scheduleEnd,

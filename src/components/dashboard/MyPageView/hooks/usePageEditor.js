@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   defaultAvailableDays,
   defaultPageData,
@@ -21,6 +21,16 @@ export default function usePageEditor() {
     message: "",
     state: "idle",
   });
+  const [pendingImages, setPendingImages] = useState(createEmptyPendingImages);
+  const [savedSnapshot, setSavedSnapshot] = useState(() =>
+    createEditorSnapshot({
+      availableDays: defaultAvailableDays,
+      data: defaultPageData,
+      heroImage: "",
+      profileImage: "",
+      services: initialServices,
+    }),
+  );
   const hydratedPageId = useRef("");
   const { isUploading, uploadError, uploadImage } = useImageUpload();
   const {
@@ -44,6 +54,16 @@ export default function usePageEditor() {
       setAvailableDays(editorState.availableDays);
       setHeroImage(editorState.data.heroImage ?? "");
       setProfileImage(editorState.data.profileImage ?? "");
+      setPendingImages(createEmptyPendingImages());
+      setSavedSnapshot(
+        createEditorSnapshot({
+          availableDays: editorState.availableDays,
+          data: editorState.data,
+          heroImage: editorState.data.heroImage ?? "",
+          profileImage: editorState.data.profileImage ?? "",
+          services: editorState.services,
+        }),
+      );
     };
 
     queueMicrotask(hydrateEditor);
@@ -54,25 +74,34 @@ export default function usePageEditor() {
     setData((current) => ({ ...current, [key]: value }));
   };
 
-  const handleImage = (setter, folder = "page") => async (event) => {
+  const currentSnapshot = useMemo(
+    () =>
+      createEditorSnapshot({
+        availableDays,
+        data,
+        heroImage,
+        profileImage,
+        services,
+      }),
+    [availableDays, data, heroImage, profileImage, services],
+  );
+  const hasChanges = currentSnapshot !== savedSnapshot;
+
+  const handleImage = (setter, folder = "page", key = "heroImage") => async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setFeedback("Comprimiendo y subiendo imagen...");
+    setFeedback("Imagen lista. Se guardara en Storage al publicar cambios.");
     const localPreviewUrl = URL.createObjectURL(file);
     setter(localPreviewUrl);
-
-    const { error, publicUrl } = await uploadImage({ file, folder });
-
-    if (publicUrl) {
-      setter(publicUrl);
-      setFeedback("Imagen guardada en Supabase Storage.");
-    } else {
-      setFeedback(
-        error?.message ||
-          "No se pudo subir la imagen. Revisa el bucket de Supabase.",
-      );
-    }
+    setPendingImages((current) => ({
+      ...current,
+      [key]: {
+        file,
+        folder,
+        previewUrl: localPreviewUrl,
+      },
+    }));
   };
 
   const updateService = (id, key, value) => {
@@ -87,24 +116,20 @@ export default function usePageEditor() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setFeedback("Comprimiendo y subiendo imagen del servicio...");
+    setFeedback("Imagen del servicio lista. Se guardara en Storage al publicar.");
     const localPreviewUrl = URL.createObjectURL(file);
     updateService(id, "image", localPreviewUrl);
-
-    const { error, publicUrl } = await uploadImage({
-      file,
-      folder: `services/${id}`,
-    });
-
-    if (publicUrl) {
-      updateService(id, "image", publicUrl);
-      setFeedback("Imagen del servicio guardada en Supabase Storage.");
-    } else {
-      setFeedback(
-        error?.message ||
-          "No se pudo subir la imagen del servicio. Revisa el bucket de Supabase.",
-      );
-    }
+    setPendingImages((current) => ({
+      ...current,
+      services: {
+        ...current.services,
+        [id]: {
+          file,
+          folder: `services/${id}`,
+          previewUrl: localPreviewUrl,
+        },
+      },
+    }));
   };
 
   const addService = () => {
@@ -136,26 +161,34 @@ export default function usePageEditor() {
   const handleSavePage = async () => {
     setFeedback("");
     setPublishStatus({
-      message: "Estamos preparando tu pagina y validando imagenes.",
+      message: "Estamos preparando tu pagina y guardando imagenes.",
       state: "publishing",
     });
 
-    if (hasPendingLocalImages({ heroImage, profileImage, services })) {
-      const message =
-        uploadError ||
-        "Hay imagenes locales que aun no estan guardadas en Supabase. Espera a que terminen de subir o vuelve a adjuntarlas.";
+    const prepared = await uploadPendingImages({
+      data,
+      heroImage,
+      pendingImages,
+      profileImage,
+      services,
+      uploadImage,
+    });
+
+    if (prepared.error) {
+      const message = prepared.error.message || uploadError;
       setFeedback(message);
       setPublishStatus({
         message,
         state: "error",
       });
-      return {
-        error: {
-          message:
-            "Hay imagenes locales pendientes de subir antes de publicar.",
-        },
-      };
+      return { error: prepared.error };
     }
+
+    setData(prepared.data);
+    setHeroImage(prepared.heroImage);
+    setProfileImage(prepared.profileImage);
+    setServices(prepared.services);
+    setPendingImages(createEmptyPendingImages());
 
     setPublishStatus({
       message: "Guardando datos en Supabase y publicando tu landing.",
@@ -165,11 +198,12 @@ export default function usePageEditor() {
     const result = await savePage({
       availableDays,
       data: {
-        ...data,
-        heroImage: sanitizeStoredImageUrl(heroImage),
-        profileImage: sanitizeStoredImageUrl(profileImage),
+        ...prepared.data,
+        heroImage: sanitizeStoredImageUrl(prepared.heroImage),
+        logoImage: sanitizeStoredImageUrl(prepared.data.logoImage),
+        profileImage: sanitizeStoredImageUrl(prepared.profileImage),
       },
-      services: services.filter(
+      services: prepared.services.filter(
         (service) =>
           service.name ||
           service.description ||
@@ -187,6 +221,18 @@ export default function usePageEditor() {
       message,
       state: result.error ? "error" : "success",
     });
+
+    if (!result.error) {
+      setSavedSnapshot(
+        createEditorSnapshot({
+          availableDays,
+          data: prepared.data,
+          heroImage: prepared.heroImage,
+          profileImage: prepared.profileImage,
+          services: prepared.services,
+        }),
+      );
+    }
 
     return result;
   };
@@ -206,6 +252,7 @@ export default function usePageEditor() {
     handleImage,
     handleSavePage,
     heroImage,
+    hasChanges,
     isLoading,
     isSaving,
     isUploading,
@@ -223,8 +270,160 @@ export default function usePageEditor() {
   };
 }
 
-function hasPendingLocalImages({ heroImage, profileImage, services }) {
-  return [heroImage, profileImage, ...services.map((service) => service.image)].some(
-    (image) => image?.startsWith("blob:") || image?.startsWith("data:"),
-  );
+async function uploadPendingImages({
+  data,
+  heroImage,
+  pendingImages,
+  profileImage,
+  services,
+  uploadImage,
+}) {
+  const nextData = { ...data };
+  let nextHeroImage = heroImage;
+  let nextProfileImage = profileImage;
+  let nextServices = services;
+
+  const logoResult = await uploadPendingImage({
+    currentUrl: nextData.logoImage,
+    pendingImage: pendingImages.logoImage,
+    uploadImage,
+  });
+  if (logoResult.error) return { error: logoResult.error };
+  nextData.logoImage = logoResult.url;
+
+  const heroResult = await uploadPendingImage({
+    currentUrl: nextHeroImage,
+    pendingImage: pendingImages.heroImage,
+    uploadImage,
+  });
+  if (heroResult.error) return { error: heroResult.error };
+  nextHeroImage = heroResult.url;
+
+  const profileResult = await uploadPendingImage({
+    currentUrl: nextProfileImage,
+    pendingImage: pendingImages.profileImage,
+    uploadImage,
+  });
+  if (profileResult.error) return { error: profileResult.error };
+  nextProfileImage = profileResult.url;
+
+  nextServices = await Promise.all(
+    services.map(async (service) => {
+      const serviceResult = await uploadPendingImage({
+        currentUrl: service.image,
+        pendingImage: pendingImages.services[service.id],
+        uploadImage,
+      });
+
+      if (serviceResult.error) {
+        throw serviceResult.error;
+      }
+
+      return {
+        ...service,
+        image: serviceResult.url,
+      };
+    }),
+  ).catch((error) => ({ error }));
+
+  if (nextServices.error) {
+    return { error: nextServices.error };
+  }
+
+  const localImageError = getLocalImageError({
+    heroImage: nextHeroImage,
+    logoImage: nextData.logoImage,
+    profileImage: nextProfileImage,
+    services: nextServices,
+  });
+
+  if (localImageError) {
+    return { error: { message: localImageError } };
+  }
+
+  return {
+    data: nextData,
+    heroImage: nextHeroImage,
+    profileImage: nextProfileImage,
+    services: nextServices,
+  };
+}
+
+async function uploadPendingImage({ currentUrl, pendingImage, uploadImage }) {
+  if (!currentUrl) {
+    return { error: null, url: "" };
+  }
+
+  if (!isLocalImage(currentUrl)) {
+    return { error: null, url: currentUrl };
+  }
+
+  if (!pendingImage || pendingImage.previewUrl !== currentUrl) {
+    return {
+      error: {
+        message:
+          "Hay una imagen local pendiente. Vuelve a adjuntarla para poder guardarla en Storage.",
+      },
+      url: currentUrl,
+    };
+  }
+
+  const { error, publicUrl } = await uploadImage({
+    file: pendingImage.file,
+    folder: pendingImage.folder,
+  });
+
+  if (error || !publicUrl) {
+    return {
+      error: error || {
+        message:
+          "No se pudo subir una imagen. Revisa el bucket de Supabase.",
+      },
+      url: currentUrl,
+    };
+  }
+
+  return { error: null, url: publicUrl };
+}
+
+function getLocalImageError({ heroImage, logoImage, profileImage, services }) {
+  const hasLocalImage = [
+    heroImage,
+    logoImage,
+    profileImage,
+    ...services.map((service) => service.image),
+  ].some(isLocalImage);
+
+  return hasLocalImage
+    ? "Hay imagenes locales pendientes de guardar en Storage."
+    : "";
+}
+
+function isLocalImage(image) {
+  return image?.startsWith("blob:") || image?.startsWith("data:");
+}
+
+function createEmptyPendingImages() {
+  return {
+    heroImage: null,
+    logoImage: null,
+    profileImage: null,
+    services: {},
+  };
+}
+
+function createEditorSnapshot({
+  availableDays,
+  data,
+  heroImage,
+  profileImage,
+  services,
+}) {
+  return JSON.stringify({
+    availableDays,
+    data,
+    heroImage,
+    profileImage,
+    services,
+  });
 }

@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { inputClassName } from "@/components/dashboard/MyPageView/data";
 import Field from "@/components/dashboard/MyPageView/components/Field";
+import ImagePicker from "@/components/dashboard/MyPageView/components/ImagePicker";
 import SectionHeader from "@/components/dashboard/MyPageView/components/SectionHeader";
 
-export default function AppearanceSection({ data, updateData }) {
+export default function AppearanceSection({ data, handleImage, updateData }) {
   return (
     <article className="rounded-card border border-line bg-surface p-4 shadow-card">
       <SectionHeader
@@ -15,6 +16,17 @@ export default function AppearanceSection({ data, updateData }) {
       />
 
       <div className="grid gap-5">
+        <ImagePicker
+          label="Logo de la empresa"
+          image={data.logoImage}
+          onChange={handleImage(
+            (image) => updateData("logoImage", image),
+            "brand/logo",
+            "logoImage",
+          )}
+          onClear={() => updateData("logoImage", "")}
+          hint="Se mostrara en el encabezado, confirmaciones y vista publica."
+        />
         <ColorPicker
           label="Color principal"
           value={data.primaryColor}

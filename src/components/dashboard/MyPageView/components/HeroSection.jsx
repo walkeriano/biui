@@ -25,7 +25,7 @@ export default function HeroSection({
         <ImagePicker
           label="Imagen de portada"
           image={heroImage}
-          onChange={handleImage(setHeroImage)}
+          onChange={handleImage(setHeroImage, "page", "heroImage")}
           onClear={() => setHeroImage("")}
           hint="Recomendado: 1920x1080px."
         />
