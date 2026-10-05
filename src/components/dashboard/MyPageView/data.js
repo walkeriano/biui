@@ -24,6 +24,23 @@ export const defaultPageData = {
   titleFont: "Playfair Display",
   textFont: "Inter",
   buttonStyle: "rounded",
+  heroLabel: "",
+  heroTitle: "",
+  heroText: "",
+  profileTitle: "",
+  profileSubtitle: "",
+  profileDescription: "",
+  city: "",
+  address: "",
+  phone: "",
+  email: "",
+  publicSlug: "",
+  scheduleStart: "09:00",
+  scheduleEnd: "18:00",
+};
+
+export const publicPageFallbackData = {
+  ...defaultPageData,
   heroLabel: "TU ESPACIO SEGURO",
   heroTitle: "Bienestar emocional para una vida mas plena",
   heroText:
@@ -41,7 +58,18 @@ export const defaultPageData = {
   scheduleEnd: "20:00",
 };
 
-export const initialServices = [
+export const emptyService = {
+  id: 1,
+  name: "",
+  duration: "50 minutos",
+  price: "",
+  image: "",
+  description: "",
+};
+
+export const initialServices = [{ ...emptyService }];
+
+export const publicFallbackServices = [
   {
     id: 1,
     name: "Terapia individual",

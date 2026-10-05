@@ -8,6 +8,7 @@ import {
 } from "@/components/dashboard/MyPageView/data";
 import useImageUpload from "@/hooks/useImageUpload";
 import useProfessionalPage from "@/hooks/useProfessionalPage";
+import { sanitizeStoredImageUrl } from "@/lib/professionalPage/mapper";
 
 export default function usePageEditor() {
   const [data, setData] = useState(defaultPageData);
@@ -16,6 +17,10 @@ export default function usePageEditor() {
   const [profileImage, setProfileImage] = useState("");
   const [availableDays, setAvailableDays] = useState(defaultAvailableDays);
   const [feedback, setFeedback] = useState("");
+  const [publishStatus, setPublishStatus] = useState({
+    message: "",
+    state: "idle",
+  });
   const hydratedPageId = useRef("");
   const { isUploading, uploadError, uploadImage } = useImageUpload();
   const {
@@ -53,15 +58,20 @@ export default function usePageEditor() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setFeedback("Comprimiendo y subiendo imagen...");
     const localPreviewUrl = URL.createObjectURL(file);
     setter(localPreviewUrl);
 
-    const { publicUrl } = await uploadImage({ file, folder });
+    const { error, publicUrl } = await uploadImage({ file, folder });
 
     if (publicUrl) {
       setter(publicUrl);
+      setFeedback("Imagen guardada en Supabase Storage.");
     } else {
-      setFeedback("No se pudo subir la imagen. Revisa el bucket de Supabase.");
+      setFeedback(
+        error?.message ||
+          "No se pudo subir la imagen. Revisa el bucket de Supabase.",
+      );
     }
   };
 
@@ -77,19 +87,22 @@ export default function usePageEditor() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setFeedback("Comprimiendo y subiendo imagen del servicio...");
     const localPreviewUrl = URL.createObjectURL(file);
     updateService(id, "image", localPreviewUrl);
 
-    const { publicUrl } = await uploadImage({
+    const { error, publicUrl } = await uploadImage({
       file,
       folder: `services/${id}`,
     });
 
     if (publicUrl) {
       updateService(id, "image", publicUrl);
+      setFeedback("Imagen del servicio guardada en Supabase Storage.");
     } else {
       setFeedback(
-        "No se pudo subir la imagen del servicio. Revisa el bucket de Supabase.",
+        error?.message ||
+          "No se pudo subir la imagen del servicio. Revisa el bucket de Supabase.",
       );
     }
   };
@@ -122,23 +135,64 @@ export default function usePageEditor() {
 
   const handleSavePage = async () => {
     setFeedback("");
+    setPublishStatus({
+      message: "Estamos preparando tu pagina y validando imagenes.",
+      state: "publishing",
+    });
+
+    if (hasPendingLocalImages({ heroImage, profileImage, services })) {
+      const message =
+        uploadError ||
+        "Hay imagenes locales que aun no estan guardadas en Supabase. Espera a que terminen de subir o vuelve a adjuntarlas.";
+      setFeedback(message);
+      setPublishStatus({
+        message,
+        state: "error",
+      });
+      return {
+        error: {
+          message:
+            "Hay imagenes locales pendientes de subir antes de publicar.",
+        },
+      };
+    }
+
+    setPublishStatus({
+      message: "Guardando datos en Supabase y publicando tu landing.",
+      state: "publishing",
+    });
+
     const result = await savePage({
       availableDays,
       data: {
         ...data,
-        heroImage,
-        profileImage,
+        heroImage: sanitizeStoredImageUrl(heroImage),
+        profileImage: sanitizeStoredImageUrl(profileImage),
       },
-      services,
+      services: services.filter(
+        (service) =>
+          service.name ||
+          service.description ||
+          service.price ||
+          service.image,
+      ),
     });
 
-    setFeedback(
-      result.error
-        ? result.error.message
-        : `Cambios publicados correctamente en /${result.data.slug}.`,
-    );
+    const message = result.error
+      ? result.error.message
+      : `Cambios publicados correctamente en /${result.data.slug}.`;
+
+    setFeedback(message);
+    setPublishStatus({
+      message,
+      state: result.error ? "error" : "success",
+    });
 
     return result;
+  };
+
+  const closePublishStatus = () => {
+    setPublishStatus({ message: "", state: "idle" });
   };
 
   return {
@@ -147,6 +201,7 @@ export default function usePageEditor() {
     data,
     error: uploadError || error,
     feedback,
+    closePublishStatus,
     handleServiceImage,
     handleImage,
     handleSavePage,
@@ -154,7 +209,9 @@ export default function usePageEditor() {
     isLoading,
     isSaving,
     isUploading,
+    hasExistingPage: Boolean(page?.id),
     page,
+    publishStatus,
     profileImage,
     removeService,
     services,
@@ -164,4 +221,10 @@ export default function usePageEditor() {
     updateData,
     updateService,
   };
+}
+
+function hasPendingLocalImages({ heroImage, profileImage, services }) {
+  return [heroImage, profileImage, ...services.map((service) => service.image)].some(
+    (image) => image?.startsWith("blob:") || image?.startsWith("data:"),
+  );
 }

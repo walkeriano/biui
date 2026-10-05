@@ -2,6 +2,8 @@ import {
   defaultAvailableDays,
   defaultPageData,
   initialServices,
+  publicFallbackServices,
+  publicPageFallbackData,
 } from "@/components/dashboard/MyPageView/data";
 import { buildTimeSlots } from "@/lib/availability";
 import { sanitizeSlug } from "@/lib/slug";
@@ -13,38 +15,38 @@ export const defaultProfessional = {
 };
 
 const defaultTheme = {
-  primaryColor: defaultPageData.primaryColor,
-  secondaryColor: defaultPageData.secondaryColor,
+  primaryColor: publicPageFallbackData.primaryColor,
+  secondaryColor: publicPageFallbackData.secondaryColor,
   titleFont: "Georgia",
   textFont: "Arial",
-  buttonStyle: defaultPageData.buttonStyle,
+  buttonStyle: publicPageFallbackData.buttonStyle,
 };
 
 const defaultHero = {
-  label: defaultPageData.heroLabel,
-  title: defaultPageData.heroTitle,
-  text: defaultPageData.heroText,
+  label: publicPageFallbackData.heroLabel,
+  title: publicPageFallbackData.heroTitle,
+  text: publicPageFallbackData.heroText,
   image: "",
 };
 
 const defaultAbout = {
-  title: defaultPageData.profileTitle,
-  subtitle: defaultPageData.profileSubtitle,
-  description: defaultPageData.profileDescription,
+  title: publicPageFallbackData.profileTitle,
+  subtitle: publicPageFallbackData.profileSubtitle,
+  description: publicPageFallbackData.profileDescription,
   image: "",
 };
 
 const defaultContact = {
-  city: defaultPageData.city,
-  address: defaultPageData.address,
-  phone: defaultPageData.phone,
-  email: defaultPageData.email,
+  city: publicPageFallbackData.city,
+  address: publicPageFallbackData.address,
+  phone: publicPageFallbackData.phone,
+  email: publicPageFallbackData.email,
 };
 
 const defaultAvailability = {
   days: defaultAvailableDays,
-  start: defaultPageData.scheduleStart,
-  end: defaultPageData.scheduleEnd,
+  start: publicPageFallbackData.scheduleStart,
+  end: publicPageFallbackData.scheduleEnd,
   times: ["09:00", "10:00", "11:00", "12:00", "16:00", "17:30"],
 };
 
@@ -70,15 +72,18 @@ export function editorStateToPagePayload({
       label: data.heroLabel,
       title: data.heroTitle,
       text: data.heroText,
-      image: data.heroImage ?? "",
+      image: sanitizeStoredImageUrl(data.heroImage),
     },
     about: {
       title: data.profileTitle,
       subtitle: data.profileSubtitle,
       description: data.profileDescription,
-      image: data.profileImage ?? "",
+      image: sanitizeStoredImageUrl(data.profileImage),
     },
-    services,
+    services: services.map((service) => ({
+      ...service,
+      image: sanitizeStoredImageUrl(service.image),
+    })),
     contact: {
       city: data.city,
       address: data.address,
@@ -117,13 +122,13 @@ export function pagePayloadToEditorState(page) {
       heroLabel: page.hero?.label ?? defaultPageData.heroLabel,
       heroTitle: page.hero?.title ?? defaultPageData.heroTitle,
       heroText: page.hero?.text ?? defaultPageData.heroText,
-      heroImage: page.hero?.image ?? "",
+      heroImage: sanitizeStoredImageUrl(page.hero?.image),
       profileTitle: page.about?.title ?? defaultPageData.profileTitle,
       profileSubtitle:
         page.about?.subtitle ?? defaultPageData.profileSubtitle,
       profileDescription:
         page.about?.description ?? defaultPageData.profileDescription,
-      profileImage: page.about?.image ?? "",
+      profileImage: sanitizeStoredImageUrl(page.about?.image),
       city: page.contact?.city ?? defaultPageData.city,
       address: page.contact?.address ?? defaultPageData.address,
       phone: page.contact?.phone ?? defaultPageData.phone,
@@ -132,7 +137,12 @@ export function pagePayloadToEditorState(page) {
       scheduleStart: page.availability?.start ?? defaultPageData.scheduleStart,
       scheduleEnd: page.availability?.end ?? defaultPageData.scheduleEnd,
     },
-    services: page.services?.length ? page.services : initialServices,
+    services: page.services?.length
+      ? page.services.map((service) => ({
+          ...service,
+          image: sanitizeStoredImageUrl(service.image),
+        }))
+      : initialServices,
   };
 }
 
@@ -144,11 +154,36 @@ export function databaseRowToPublicPage(row) {
     slug: row.slug,
     professional: { ...defaultProfessional, ...(row.professional ?? {}) },
     theme: { ...defaultTheme, ...(row.theme ?? {}) },
-    hero: { ...defaultHero, ...(row.hero ?? {}) },
-    about: { ...defaultAbout, ...(row.about ?? {}) },
-    services: row.services?.length ? row.services : initialServices,
+    hero: {
+      ...defaultHero,
+      ...(row.hero ?? {}),
+      image: sanitizeStoredImageUrl(row.hero?.image),
+    },
+    about: {
+      ...defaultAbout,
+      ...(row.about ?? {}),
+      image: sanitizeStoredImageUrl(row.about?.image),
+    },
+    services: row.services?.length
+      ? row.services.map((service) => ({
+          ...service,
+          image: sanitizeStoredImageUrl(service.image),
+        }))
+      : publicFallbackServices,
     contact: { ...defaultContact, ...(row.contact ?? {}) },
     availability: { ...defaultAvailability, ...(row.availability ?? {}) },
     published: row.published,
   };
+}
+
+export function sanitizeStoredImageUrl(url) {
+  if (!url || typeof url !== "string") {
+    return "";
+  }
+
+  if (url.startsWith("blob:") || url.startsWith("data:")) {
+    return "";
+  }
+
+  return url;
 }
