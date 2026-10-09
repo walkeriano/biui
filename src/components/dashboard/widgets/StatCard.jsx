@@ -9,9 +9,11 @@ export default function StatCard({ icon, tone, value, label }) {
   };
 
   return (
-    <article className="rounded-card border border-line bg-surface p-4 shadow-card">
+    <article className="flex min-h-[7.5rem] items-center justify-center rounded-card border border-line bg-surface p-4 shadow-card">
       <div className="flex items-center justify-center gap-4">
-        <span className={`grid size-11 shrink-0 place-items-center rounded-md ${toneClassName[tone]}`}>
+        <span
+          className={`grid size-11 shrink-0 place-items-center rounded-md ${toneClassName[tone]}`}
+        >
           <FontAwesomeIcon icon={icon} className="size-5" />
         </span>
         <div className="min-w-0 text-center">

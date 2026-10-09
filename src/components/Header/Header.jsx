@@ -1,10 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faRightToBracket,
-  faUserPlus,
-} from "@/lib/fontawesome";
+import { faRightToBracket, faUserPlus } from "@/lib/fontawesome";
 
 const navigation = [
   { label: "Inicio", href: "/", active: true },

@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import DashboardNav from "@/components/dashboard/DashboardNav/DashboardNav";
 import DashboardHome from "@/components/dashboard/DashboardHome/DashboardHome";
 import MyPageView from "@/components/dashboard/MyPageView/MyPageView";
 import ReservationsView from "@/components/dashboard/ReservationsView/ReservationsView";
+import useAuthActions from "@/hooks/useAuthActions";
 import useCurrentPublicPageLink from "@/hooks/useCurrentPublicPageLink";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -22,10 +24,13 @@ const views = {
 };
 
 export default function DashboardShell() {
+  const router = useRouter();
   const [activeView, setActiveView] = useState("home");
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isNavCollapsed, setIsNavCollapsed] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const { user } = useAuth();
+  const { signOut } = useAuthActions();
   const publicPageLink = useCurrentPublicPageLink();
   const ActiveView = views[activeView] ?? DashboardHome;
   const displayName =
@@ -42,6 +47,19 @@ export default function DashboardShell() {
     setIsNavOpen(false);
   };
 
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    const { error } = await signOut();
+
+    if (error) {
+      setIsSigningOut(false);
+      window.alert(error.message);
+      return;
+    }
+
+    router.replace("/acceso");
+  };
+
   return (
     <main className="min-h-dvh bg-[linear-gradient(135deg,#f7fbfb_0%,#f1f8ef_45%,#ffffff_100%)] text-foreground">
       <div className="min-h-dvh">
@@ -50,8 +68,10 @@ export default function DashboardShell() {
           isCollapsed={isNavCollapsed}
           isOpen={isNavOpen}
           onClose={() => setIsNavOpen(false)}
+          onSignOut={handleSignOut}
           onToggleCollapse={() => setIsNavCollapsed((value) => !value)}
           onViewChange={handleViewChange}
+          isSigningOut={isSigningOut}
         />
 
         <section

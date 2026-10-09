@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBriefcase,
@@ -9,6 +10,7 @@ import {
   faMobileScreenButton,
   faPenToSquare,
   faUser,
+  faUserPlus,
   faUsers,
 } from "@/lib/fontawesome";
 
@@ -80,27 +82,34 @@ export default function BenefitsSection() {
   return (
     <section
       id="beneficios"
-      className="relative overflow-hidden bg-white px-4 py-20 text-foreground sm:px-6 lg:px-8 lg:py-24"
+      className="relative overflow-hidden bg-white px-4 pb-20 pt-16 text-foreground sm:px-6 lg:px-8 lg:pb-24 lg:pt-20"
     >
       <div className="pointer-events-none absolute left-[-18rem] top-[-16rem] size-[44rem] rounded-full bg-[radial-gradient(circle,rgba(208,244,157,0.44)_0%,rgba(238,250,219,0.3)_42%,transparent_70%)]" />
       <div className="pointer-events-none absolute right-[-18rem] top-[16rem] size-[46rem] rounded-full bg-[radial-gradient(circle,rgba(210,246,172,0.35)_0%,rgba(244,251,238,0.28)_46%,transparent_72%)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-[-18rem] h-[32rem] bg-[radial-gradient(circle_at_50%_50%,rgba(230,249,212,0.58)_0%,rgba(250,253,247,0.34)_42%,transparent_72%)]" />
 
       <div className="relative z-10 mx-auto max-w-[96rem]">
-        <div className="mx-auto max-w-5xl text-center">
-          <p className="mx-auto inline-flex rounded-full bg-[#e7f8d9] px-7 py-3 text-xs font-black uppercase tracking-[0.36em] text-[#05090a]">
-            Beneficios
+        <div className="mx-auto max-w-6xl text-center">
+          <p className="mx-auto inline-flex max-w-full rounded-full bg-[#ebf8d8] px-5 py-2.5 text-[0.56rem] font-black uppercase tracking-[0.16em] text-[#111714] shadow-[0_1px_0_rgba(255,255,255,0.75)_inset] sm:px-7 sm:py-3 sm:text-xs sm:tracking-[0.28em]">
+            Tu plataforma de reservas en minutos
           </p>
-          <h2 className="mt-7 text-[clamp(2.5rem,5.2vw,5.6rem)] font-black leading-[0.95] tracking-[-0.045em] text-[#05090a]">
-            Todo lo que necesitas
-            <span className="block text-[#26910f]">
-              para hacer crecer tu negocio.
-            </span>
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-lg font-medium leading-8 text-[#69707d] sm:text-2xl sm:leading-9">
-            Una plataforma simple y completa para que te enfoques en lo
-            importante: tus clientes.
+          <h1 className="mx-auto mt-7 max-w-[68rem] text-[clamp(3rem,6.4vw,6.8rem)] font-black leading-[0.94] tracking-[-0.045em] text-[#05090a]">
+            Tu web,
+            <span className="block text-[#45af16]">tus reservas</span>
+            <span className="block">y tus clientes</span>
+            <span className="block">en un solo lugar.</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-[47rem] text-lg font-medium leading-8 text-[#626b70] sm:text-2xl sm:leading-9">
+            Crea tu página web con calendario de reservas, compártela con tus
+            clientes y gestiona citas automáticamente.
           </p>
+          <Link
+            href="/acceso"
+            className="mt-8 inline-flex h-14 w-full max-w-[18.5rem] items-center justify-center gap-4 rounded-[0.6rem] bg-[#39ad12] px-6 text-base font-bold text-white shadow-[0_18px_34px_rgba(44,160,17,0.18)] transition hover:bg-[#2f9810] focus:outline-none focus:ring-4 focus:ring-[#cdecbb] sm:w-auto sm:min-w-[18.5rem] sm:text-lg"
+          >
+            Crear mi pagina
+            <FontAwesomeIcon icon={faUserPlus} className="size-4" />
+          </Link>
         </div>
 
         <div className="mx-auto mt-12 grid max-w-[94rem] gap-4 [perspective:1400px] sm:grid-cols-2 lg:grid-cols-[1.04fr_1.08fr_0.92fr_1.14fr] lg:gap-3">
@@ -132,7 +141,7 @@ export default function BenefitsSection() {
           ))}
         </div>
 
-        <div className="mx-auto mt-14 grid max-w-[86rem] gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mx-auto mt-20 grid max-w-[86rem] gap-4 md:grid-cols-2 lg:mt-28 xl:grid-cols-3">
           {benefits.map((benefit) => (
             <article
               key={benefit.title}

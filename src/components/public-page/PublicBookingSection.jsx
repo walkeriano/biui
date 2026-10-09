@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRight,
@@ -47,11 +47,19 @@ export default function PublicBookingSection({ page, previewMode = false }) {
   });
   const [status, setStatus] = useState({ message: "", state: "idle" });
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [bookedTimes, setBookedTimes] = useState([]);
+  const [bookedTimesError, setBookedTimesError] = useState("");
+  const [isLoadingBookedTimes, setIsLoadingBookedTimes] = useState(false);
   const selectedDayLabel = formatSelectedDay(selectedDay);
+  const selectedDateKey = useMemo(
+    () => getSelectedDateKey(selectedDay),
+    [selectedDay],
+  );
+  const selectedTimeIsBooked = bookedTimes.includes(selectedTime);
   const currentStep = getCurrentStep({
     hasSelectedDay,
     hasSelectedService,
-    selectedTime,
+    selectedTime: selectedTimeIsBooked ? "" : selectedTime,
   });
   const canSubmit = Boolean(
     hasSelectedDay &&
@@ -59,8 +67,59 @@ export default function PublicBookingSection({ page, previewMode = false }) {
     selectedService &&
     formData.customerName.trim() &&
     formData.customerPhone.trim() &&
+    !selectedTimeIsBooked &&
+    !isLoadingBookedTimes &&
     status.state !== "submitting",
   );
+
+  useEffect(() => {
+    if (previewMode || !page.slug || !hasSelectedDay || !selectedDateKey) {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+
+    async function fetchBookedTimes() {
+      setIsLoadingBookedTimes(true);
+      setBookedTimesError("");
+
+      try {
+        const params = new URLSearchParams({
+          date: selectedDateKey,
+          slug: page.slug,
+        });
+        const response = await fetch(`/api/appointments?${params}`, {
+          signal: controller.signal,
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.error || "No se pudieron consultar horarios ocupados.",
+          );
+        }
+
+        setBookedTimes(
+          Array.isArray(result.bookedAppointmentAts)
+            ? result.bookedAppointmentAts.map(formatTimeFromIso)
+            : [],
+        );
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          setBookedTimes([]);
+          setBookedTimesError(error.message);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingBookedTimes(false);
+        }
+      }
+    }
+
+    fetchBookedTimes();
+
+    return () => controller.abort();
+  }, [hasSelectedDay, page.slug, previewMode, selectedDateKey]);
 
   const updateField = (key, value) => {
     setFormData((current) => ({ ...current, [key]: value }));
@@ -108,6 +167,12 @@ export default function PublicBookingSection({ page, previewMode = false }) {
         message: result.error || "No se pudo crear la reserva.",
         state: "error",
       });
+      if (response.status === 409 && selectedTime) {
+        setBookedTimes((current) =>
+          current.includes(selectedTime) ? current : [...current, selectedTime],
+        );
+        setSelectedTime("");
+      }
       return;
     }
 
@@ -121,6 +186,9 @@ export default function PublicBookingSection({ page, previewMode = false }) {
       message: "Reserva creada correctamente. El profesional la vera en su panel.",
       state: "success",
     });
+    setBookedTimes((current) =>
+      current.includes(selectedTime) ? current : [...current, selectedTime],
+    );
     setIsSuccessModalOpen(true);
   };
 
@@ -243,6 +311,8 @@ export default function PublicBookingSection({ page, previewMode = false }) {
                     setSelectedDay(dayNumber);
                     setHasSelectedDay(true);
                     setSelectedTime("");
+                    setBookedTimes([]);
+                    setBookedTimesError("");
                   }}
                 />
               </StepCard>
@@ -258,18 +328,57 @@ export default function PublicBookingSection({ page, previewMode = false }) {
                 <p className="mb-4 text-sm capitalize text-muted">
                   {selectedDayLabel}
                 </p>
+                {isLoadingBookedTimes ? (
+                  <p className="mb-4 rounded-md bg-white px-3 py-2 text-sm font-bold text-muted shadow-card">
+                    Consultando horarios disponibles...
+                  </p>
+                ) : null}
+                {bookedTimesError ? (
+                  <p className="mb-4 rounded-md bg-danger-soft px-3 py-2 text-sm font-bold text-danger">
+                    {bookedTimesError}
+                  </p>
+                ) : null}
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {availability.slots.map((time) => (
-                    <button
-                      key={time}
-                      type="button"
-                      onClick={() => setSelectedTime(time)}
-                      className="h-12 rounded-md border border-line bg-white text-sm font-bold shadow-card transition hover:border-current"
-                      style={{ color: page.theme.primaryColor }}
-                    >
-                      {time}
-                    </button>
-                  ))}
+                  {availability.slots.map((time) => {
+                    const isBooked = bookedTimes.includes(time);
+                    const isSelected = selectedTime === time;
+                    const isDisabled = isBooked || isLoadingBookedTimes;
+
+                    return (
+                      <button
+                        key={time}
+                        type="button"
+                        onClick={() => setSelectedTime(time)}
+                        disabled={isDisabled}
+                        className={
+                          isBooked
+                            ? "grid h-14 place-items-center rounded-md border border-line bg-surface-muted text-xs font-bold text-muted shadow-card"
+                            : isSelected
+                              ? "h-14 rounded-md border text-sm font-bold text-white shadow-card transition"
+                              : "h-14 rounded-md border border-line bg-white text-sm font-bold shadow-card transition hover:border-current disabled:cursor-not-allowed disabled:opacity-60"
+                        }
+                        style={
+                          isSelected && !isBooked
+                            ? {
+                                backgroundColor: page.theme.primaryColor,
+                                borderColor: page.theme.primaryColor,
+                              }
+                            : { color: page.theme.primaryColor }
+                        }
+                      >
+                        {isBooked ? (
+                          <span>
+                            <span className="block text-sm text-muted">
+                              {time}
+                            </span>
+                            Ocupado
+                          </span>
+                        ) : (
+                          time
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </StepCard>
             ) : null}
@@ -538,4 +647,30 @@ function buildAppointmentIso(dayNumber, time) {
   );
 
   return appointment.toISOString();
+}
+
+function getSelectedDateKey(dayNumber) {
+  const today = new Date();
+  const date = new Date(today.getFullYear(), today.getMonth(), dayNumber);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0",
+  )}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function formatTimeFromIso(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return `${String(date.getHours()).padStart(2, "0")}:${String(
+    date.getMinutes(),
+  ).padStart(2, "0")}`;
 }

@@ -5,6 +5,7 @@ import {
   faAnglesRight,
   faCalendarDays,
   faHouse,
+  faRightFromBracket,
   faUser,
   faXmark,
 } from "@/lib/fontawesome";
@@ -31,7 +32,9 @@ export default function DashboardNav({
   activeView,
   isCollapsed,
   isOpen,
+  isSigningOut,
   onClose,
+  onSignOut,
   onToggleCollapse,
   onViewChange,
 }) {
@@ -93,8 +96,8 @@ export default function DashboardNav({
           </button>
         </div>
 
-        <div className="-mx-2 px-2 pb-5">
-          <nav className="grid gap-2">
+        <div className="-mx-2 flex flex-1 items-center px-2 py-5">
+          <nav className="grid w-full gap-2">
             {navigation.map((item) => {
               const isActive = activeView === item.id;
               const isEnabled = item.enabled;
@@ -134,9 +137,24 @@ export default function DashboardNav({
                 </button>
               );
             })}
+            <button
+              type="button"
+              onClick={onSignOut}
+              disabled={isSigningOut}
+              className="flex w-full items-center gap-3 rounded-card px-3 py-2.5 text-left text-foreground transition hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-70"
+              title={isCollapsed ? "Cerrar sesión" : undefined}
+            >
+              <span className="grid size-9 shrink-0 place-items-center rounded-md bg-surface-muted text-primary">
+                <FontAwesomeIcon icon={faRightFromBracket} className="size-4" />
+              </span>
+              <span className={isCollapsed ? "lg:hidden" : "block"}>
+                <span className="block text-sm font-bold">
+                  {isSigningOut ? "Cerrando..." : "Cerrar sesión"}
+                </span>
+              </span>
+            </button>
           </nav>
         </div>
-
       </aside>
     </>
   );
