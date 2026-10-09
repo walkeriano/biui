@@ -44,6 +44,7 @@ export default function PublicBookingSection({ page, previewMode = false }) {
     customerName: "",
     customerPhone: "",
     notes: "",
+    website: "",
   });
   const [status, setStatus] = useState({ message: "", state: "idle" });
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -181,6 +182,7 @@ export default function PublicBookingSection({ page, previewMode = false }) {
       customerName: "",
       customerPhone: "",
       notes: "",
+      website: "",
     });
     setStatus({
       message: "Reserva creada correctamente. El profesional la vera en su panel.",
@@ -209,8 +211,11 @@ export default function PublicBookingSection({ page, previewMode = false }) {
             Reserva tu cita
           </p>
           <h2
-            className="mt-3 text-4xl font-bold leading-tight text-[#061923] sm:text-5xl"
-            style={{ fontFamily: page.theme.titleFont }}
+            className="mt-3 text-4xl font-bold leading-tight sm:text-5xl"
+            style={{
+              color: page.theme.primaryColor,
+              fontFamily: page.theme.titleFont,
+            }}
           >
             Da el primer paso hoy
           </h2>
@@ -221,6 +226,17 @@ export default function PublicBookingSection({ page, previewMode = false }) {
         </div>
 
         <form onSubmit={handleSubmit} className="mt-12">
+          <input
+            type="text"
+            name="website"
+            value={formData.website}
+            onChange={(event) => updateField("website", event.target.value)}
+            autoComplete="off"
+            tabIndex={-1}
+            className="hidden"
+            aria-hidden="true"
+          />
+
           <div className="relative mx-auto grid max-w-5xl grid-cols-4 gap-2">
             <div className="absolute left-[12.5%] right-[12.5%] top-5 h-px bg-[#b9c5c1]" />
             {steps.map((step, index) => {
@@ -264,7 +280,7 @@ export default function PublicBookingSection({ page, previewMode = false }) {
           <div className="mx-auto mt-12 max-w-3xl">
             {currentStep === 1 ? (
               <StepCard
-                accentColor={page.theme.secondaryColor}
+                accentColor={page.theme.primaryColor}
                 icon={faUser}
                 eyebrow="Paso 1"
                 title="Elige el servicio"
@@ -298,7 +314,7 @@ export default function PublicBookingSection({ page, previewMode = false }) {
 
             {currentStep === 2 ? (
               <StepCard
-                accentColor={page.theme.secondaryColor}
+                accentColor={page.theme.primaryColor}
                 icon={faCalendarDays}
                 eyebrow="Paso 2"
                 title="Selecciona la fecha"
@@ -320,7 +336,7 @@ export default function PublicBookingSection({ page, previewMode = false }) {
 
             {currentStep === 3 ? (
               <StepCard
-                accentColor={page.theme.secondaryColor}
+                accentColor={page.theme.primaryColor}
                 icon={faClock}
                 eyebrow="Paso 3"
                 title="Selecciona la hora"
@@ -385,7 +401,7 @@ export default function PublicBookingSection({ page, previewMode = false }) {
 
             {currentStep === 4 ? (
               <StepCard
-                accentColor={page.theme.secondaryColor}
+                accentColor={page.theme.primaryColor}
                 icon={faUser}
                 eyebrow="Paso 4"
                 title="Completa tus datos"
@@ -475,8 +491,11 @@ export default function PublicBookingSection({ page, previewMode = false }) {
               )}
             </div>
             <p
-              className="mt-5 text-2xl font-bold text-[#061923]"
-              style={{ fontFamily: page.theme.titleFont }}
+              className="mt-5 text-2xl font-bold"
+              style={{
+                color: page.theme.primaryColor,
+                fontFamily: page.theme.titleFont,
+              }}
             >
               Cita reservada
             </p>
@@ -618,7 +637,12 @@ function StepCard({ accentColor, children, eyebrow, icon, title }) {
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
             {eyebrow}
           </p>
-          <h3 className="text-xl font-bold text-[#061923]">{title}</h3>
+          <h3
+            className="text-xl font-bold"
+            style={{ color: accentColor }}
+          >
+            {title}
+          </h3>
         </div>
       </div>
       {children}

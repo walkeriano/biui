@@ -1,6 +1,17 @@
 insert into storage.buckets (id, name, public)
 values ('profesional-assets', 'profesional-assets', true)
-on conflict (id) do update set public = true;
+on conflict (id) do update
+set
+  allowed_mime_types = array[
+    'image/avif',
+    'image/gif',
+    'image/jpeg',
+    'image/png',
+    'image/svg+xml',
+    'image/webp'
+  ],
+  file_size_limit = 5242880,
+  public = true;
 
 drop policy if exists "Professional assets are publicly readable" on storage.objects;
 drop policy if exists "Professionals can upload their own assets" on storage.objects;

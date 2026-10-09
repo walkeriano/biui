@@ -63,7 +63,8 @@ export default function Register({ onSwitchToLogin }) {
           Crea tu cuenta
         </h2>
         <p className="mt-2 text-sm leading-6 text-muted">
-          Empieza a recibir reservas en minutos.
+          Construye tu pagina profesional, publica tus servicios y empieza a
+          recibir solicitudes desde un enlace propio.
         </p>
       </div>
 

@@ -12,7 +12,7 @@ export default function PublicPage({ page, previewMode = false }) {
       style={{ fontFamily: page.theme.textFont }}
     >
       <PublicHeader page={page} previewMode={previewMode} />
-      <PublicHero page={page} />
+      <PublicHero page={page} previewMode={previewMode} />
       <PublicServices page={page} />
       <PublicAbout page={page} />
       <PublicBookingSection page={page} previewMode={previewMode} />

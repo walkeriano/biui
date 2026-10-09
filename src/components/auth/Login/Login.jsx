@@ -72,7 +72,8 @@ export default function Login({ onSwitchToRegister }) {
           Inicia sesion
         </h2>
         <p className="mt-2 text-sm leading-6 text-muted">
-          Vuelve a tu panel para gestionar reservas y clientes.
+          Vuelve a tu panel para editar tu pagina, revisar reservas y seguir
+          mejorando tu presencia profesional.
         </p>
       </div>
 

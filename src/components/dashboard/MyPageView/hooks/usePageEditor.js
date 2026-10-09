@@ -18,6 +18,7 @@ export default function usePageEditor() {
   const [availableDays, setAvailableDays] = useState(defaultAvailableDays);
   const [feedback, setFeedback] = useState("");
   const [publishStatus, setPublishStatus] = useState({
+    href: "",
     message: "",
     state: "idle",
   });
@@ -161,6 +162,7 @@ export default function usePageEditor() {
   const handleSavePage = async () => {
     setFeedback("");
     setPublishStatus({
+      href: "",
       message: "Estamos preparando tu pagina y guardando imagenes.",
       state: "publishing",
     });
@@ -178,6 +180,7 @@ export default function usePageEditor() {
       const message = prepared.error.message || uploadError;
       setFeedback(message);
       setPublishStatus({
+        href: "",
         message,
         state: "error",
       });
@@ -191,6 +194,7 @@ export default function usePageEditor() {
     setPendingImages(createEmptyPendingImages());
 
     setPublishStatus({
+      href: "",
       message: "Guardando datos en Supabase y publicando tu landing.",
       state: "publishing",
     });
@@ -218,6 +222,7 @@ export default function usePageEditor() {
 
     setFeedback(message);
     setPublishStatus({
+      href: result.error ? "" : `/${result.data.slug}`,
       message,
       state: result.error ? "error" : "success",
     });
@@ -238,7 +243,7 @@ export default function usePageEditor() {
   };
 
   const closePublishStatus = () => {
-    setPublishStatus({ message: "", state: "idle" });
+    setPublishStatus({ href: "", message: "", state: "idle" });
   };
 
   return {

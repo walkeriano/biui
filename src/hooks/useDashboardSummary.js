@@ -2,6 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import {
+  getUserCacheKey,
+  readLocalCache,
+  writeLocalCache,
+} from "@/lib/localCache";
 
 const initialSummary = {
   appointmentsToday: 0,
@@ -12,6 +17,7 @@ const initialSummary = {
   recentClients: [],
   page: null,
 };
+const summaryCacheTtl = 60 * 1000;
 
 export default function useDashboardSummary() {
   const { supabase, user } = useAuth();
@@ -52,12 +58,30 @@ export default function useDashboardSummary() {
     });
 
     setSummary(nextSummary);
+    writeLocalCache(
+      getUserCacheKey(user, "dashboard-summary"),
+      nextSummary,
+      summaryCacheTtl,
+    );
     setIsLoading(false);
   }, [supabase, user]);
 
   useEffect(() => {
-    queueMicrotask(fetchSummary);
-  }, [fetchSummary]);
+    queueMicrotask(() => {
+      if (user) {
+        const cachedSummary = readLocalCache(
+          getUserCacheKey(user, "dashboard-summary"),
+        );
+
+        if (cachedSummary) {
+          setSummary(cachedSummary);
+          setIsLoading(false);
+        }
+      }
+
+      fetchSummary();
+    });
+  }, [fetchSummary, user]);
 
   return useMemo(
     () => ({

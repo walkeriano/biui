@@ -52,6 +52,7 @@ const defaultAvailability = {
   days: defaultAvailableDays,
   start: publicPageFallbackData.scheduleStart,
   end: publicPageFallbackData.scheduleEnd,
+  timeZone: "Europe/Madrid",
   times: ["09:00", "10:00", "11:00", "12:00", "16:00", "17:30"],
 };
 
@@ -105,6 +106,7 @@ export function editorStateToPagePayload({
       days: availableDays,
       start: data.scheduleStart,
       end: data.scheduleEnd,
+      timeZone: defaultAvailability.timeZone,
       times: buildTimeSlots(data.scheduleStart, data.scheduleEnd),
     },
     published: true,

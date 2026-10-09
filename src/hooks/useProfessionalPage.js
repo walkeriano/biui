@@ -3,11 +3,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
+  getUserCacheKey,
+  readLocalCache,
+  writeLocalCache,
+} from "@/lib/localCache";
+import {
   databaseRowToPublicPage,
   editorStateToPagePayload,
   pagePayloadToEditorState,
 } from "@/lib/professionalPage/mapper";
 import { getFallbackSlug, sanitizeSlug } from "@/lib/slug";
+
+const pageCacheTtl = 5 * 60 * 1000;
 
 export default function useProfessionalPage() {
   const { supabase, user } = useAuth();
@@ -40,12 +47,30 @@ export default function useProfessionalPage() {
 
     const nextPage = databaseRowToPublicPage(data);
     setPage(nextPage);
+    writeLocalCache(
+      getUserCacheKey(user, "professional-page"),
+      nextPage,
+      pageCacheTtl,
+    );
     return nextPage;
   }, [supabase, user]);
 
   useEffect(() => {
-    queueMicrotask(fetchPage);
-  }, [fetchPage]);
+    queueMicrotask(() => {
+      if (user) {
+        const cachedPage = readLocalCache(
+          getUserCacheKey(user, "professional-page"),
+        );
+
+        if (cachedPage) {
+          setPage(cachedPage);
+          setIsLoading(false);
+        }
+      }
+
+      fetchPage();
+    });
+  }, [fetchPage, user]);
 
   const savePage = useCallback(
     async ({ availableDays, data, services }) => {
@@ -92,6 +117,16 @@ export default function useProfessionalPage() {
 
       const nextPage = databaseRowToPublicPage(savedRow);
       setPage(nextPage);
+      writeLocalCache(
+        getUserCacheKey(user, "professional-page"),
+        nextPage,
+        pageCacheTtl,
+      );
+      writeLocalCache(
+        getUserCacheKey(user, "public-page-slug"),
+        nextPage.slug,
+        10 * 60 * 1000,
+      );
       return { data: nextPage, error: null };
     },
     [supabase, user],

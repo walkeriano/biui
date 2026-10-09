@@ -51,7 +51,18 @@ create policy "Professionals can delete their page"
 
 insert into storage.buckets (id, name, public)
 values ('profesional-assets', 'profesional-assets', true)
-on conflict (id) do nothing;
+on conflict (id) do update
+set
+  allowed_mime_types = array[
+    'image/avif',
+    'image/gif',
+    'image/jpeg',
+    'image/png',
+    'image/svg+xml',
+    'image/webp'
+  ],
+  file_size_limit = 5242880,
+  public = true;
 
 drop policy if exists "Professional assets are publicly readable"
   on storage.objects;
@@ -110,6 +121,59 @@ create table if not exists public.appointments (
   updated_at timestamptz not null default now()
 );
 
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'appointments_status_check'
+  ) then
+    alter table public.appointments
+      add constraint appointments_status_check
+      check (status in ('pendiente', 'confirmada', 'cancelada'));
+  end if;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'appointments_customer_name_length_check'
+  ) then
+    alter table public.appointments
+      add constraint appointments_customer_name_length_check
+      check (char_length(customer_name) between 1 and 120);
+  end if;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'appointments_customer_phone_length_check'
+  ) then
+    alter table public.appointments
+      add constraint appointments_customer_phone_length_check
+      check (char_length(customer_phone) between 1 and 40);
+  end if;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'appointments_customer_email_length_check'
+  ) then
+    alter table public.appointments
+      add constraint appointments_customer_email_length_check
+      check (customer_email is null or char_length(customer_email) <= 254);
+  end if;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'appointments_notes_length_check'
+  ) then
+    alter table public.appointments
+      add constraint appointments_notes_length_check
+      check (notes is null or char_length(notes) <= 500);
+  end if;
+end $$;
+
 create index if not exists appointments_professional_user_id_idx
   on public.appointments(professional_user_id);
 
@@ -129,20 +193,6 @@ drop policy if exists "Professionals can read their appointments"
 drop policy if exists "Professionals can update their appointments"
   on public.appointments;
 
-create policy "Customers can create appointments on published pages"
-  on public.appointments
-  for insert
-  with check (
-    status = 'pendiente'
-    and exists (
-      select 1
-      from public.professional_pages page
-      where page.id = professional_page_id
-        and page.user_id = professional_user_id
-        and page.published = true
-    )
-  );
-
 create policy "Professionals can read their appointments"
   on public.appointments
   for select
@@ -153,3 +203,27 @@ create policy "Professionals can update their appointments"
   for update
   using (auth.uid() = professional_user_id)
   with check (auth.uid() = professional_user_id);
+
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists professional_pages_set_updated_at
+  on public.professional_pages;
+create trigger professional_pages_set_updated_at
+  before update on public.professional_pages
+  for each row
+  execute function public.set_updated_at();
+
+drop trigger if exists appointments_set_updated_at
+  on public.appointments;
+create trigger appointments_set_updated_at
+  before update on public.appointments
+  for each row
+  execute function public.set_updated_at();

@@ -5,13 +5,14 @@ import PublishStatusModal from "@/components/dashboard/MyPageView/components/Pub
 import PreviewPanel from "@/components/dashboard/MyPageView/components/preview/PreviewPanel";
 import usePageEditor from "@/components/dashboard/MyPageView/hooks/usePageEditor";
 
-export default function MyPageView() {
+export default function MyPageView({ onViewChange }) {
   const editor = usePageEditor();
 
   return (
     <div className="grid gap-5">
       <PublishStatusModal
         onClose={editor.closePublishStatus}
+        onGoHome={() => onViewChange?.("home")}
         status={editor.publishStatus}
       />
 

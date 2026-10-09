@@ -14,8 +14,11 @@ export default function PublicServices({ page }) {
               Mis servicios
             </p>
             <h2
-              className="mt-3 text-4xl font-bold leading-tight text-[#061923] sm:text-5xl"
-              style={{ fontFamily: page.theme.titleFont }}
+              className="mt-3 text-4xl font-bold leading-tight sm:text-5xl"
+              style={{
+                color: page.theme.primaryColor,
+                fontFamily: page.theme.titleFont,
+              }}
             >
               ¿Como puedo ayudarte?
             </h2>
@@ -57,8 +60,11 @@ export default function PublicServices({ page }) {
                   />
                 </span>
                 <h3
-                  className="mt-5 text-xl font-bold text-[#061923]"
-                  style={{ fontFamily: page.theme.titleFont }}
+                  className="mt-5 text-xl font-bold"
+                  style={{
+                    color: page.theme.primaryColor,
+                    fontFamily: page.theme.titleFont,
+                  }}
                 >
                   {service.name}
                 </h3>

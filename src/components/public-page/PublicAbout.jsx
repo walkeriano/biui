@@ -37,8 +37,11 @@ export default function PublicAbout({ page }) {
             Sobre mi
           </p>
           <h2
-            className="mt-3 text-4xl font-bold leading-tight text-[#061923] sm:text-5xl"
-            style={{ fontFamily: page.theme.titleFont }}
+            className="mt-3 text-4xl font-bold leading-tight sm:text-5xl"
+            style={{
+              color: page.theme.primaryColor,
+              fontFamily: page.theme.titleFont,
+            }}
           >
             {page.about.title}
           </h2>
@@ -70,8 +73,11 @@ export default function PublicAbout({ page }) {
             style={{ color: page.theme.secondaryColor }}
           />
           <p
-            className="mt-4 text-lg font-bold leading-8 text-[#061923]"
-            style={{ fontFamily: page.theme.titleFont }}
+            className="mt-4 text-lg font-bold leading-8"
+            style={{
+              color: page.theme.primaryColor,
+              fontFamily: page.theme.titleFont,
+            }}
           >
             Cada proceso es unico, y por eso cada paso tambien lo es.
           </p>

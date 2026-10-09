@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import {
+  getUserCacheKey,
+  readLocalCache,
+  writeLocalCache,
+} from "@/lib/localCache";
 import { getFallbackSlug } from "@/lib/slug";
+
+const slugCacheTtl = 10 * 60 * 1000;
 
 export default function useCurrentPublicPageLink() {
   const { supabase, user } = useAuth();
@@ -26,12 +33,30 @@ export default function useCurrentPublicPageLink() {
       .maybeSingle();
 
     setSlug(data?.slug || fallbackSlug);
+    writeLocalCache(
+      getUserCacheKey(user, "public-page-slug"),
+      data?.slug || fallbackSlug,
+      slugCacheTtl,
+    );
     setIsLoading(false);
   }, [fallbackSlug, supabase, user]);
 
   useEffect(() => {
-    queueMicrotask(fetchSlug);
-  }, [fetchSlug]);
+    queueMicrotask(() => {
+      if (user) {
+        const cachedSlug = readLocalCache(
+          getUserCacheKey(user, "public-page-slug"),
+        );
+
+        if (cachedSlug) {
+          setSlug(cachedSlug);
+          setIsLoading(false);
+        }
+      }
+
+      fetchSlug();
+    });
+  }, [fetchSlug, user]);
 
   return {
     href: `/${slug}`,

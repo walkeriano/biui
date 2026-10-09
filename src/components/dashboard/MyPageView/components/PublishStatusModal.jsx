@@ -1,13 +1,25 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faClock, faXmark } from "@/lib/fontawesome";
+import {
+  faCheck,
+  faClock,
+  faHouse,
+  faUpRightFromSquare,
+  faXmark,
+} from "@/lib/fontawesome";
 
-export default function PublishStatusModal({ onClose, status }) {
+export default function PublishStatusModal({ onClose, onGoHome, status }) {
   if (!status || status.state === "idle") {
     return null;
   }
 
   const isPublishing = status.state === "publishing";
   const isSuccess = status.state === "success";
+  const pageHref = status.href || "";
+
+  const handleGoHome = () => {
+    onClose?.();
+    onGoHome?.();
+  };
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-primary/40 px-4 backdrop-blur-sm">
@@ -52,6 +64,27 @@ export default function PublishStatusModal({ onClose, status }) {
         {isPublishing ? (
           <div className="mt-5 h-2 overflow-hidden rounded-full bg-surface-muted">
             <div className="h-full w-2/3 animate-pulse rounded-full bg-accent" />
+          </div>
+        ) : isSuccess ? (
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={handleGoHome}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-line bg-surface px-4 text-sm font-bold text-foreground transition hover:border-accent hover:text-accent"
+            >
+              <FontAwesomeIcon icon={faHouse} className="size-3.5" />
+              Ir al inicio
+            </button>
+            <a
+              href={pageHref || "#"}
+              target="_blank"
+              rel="noreferrer"
+              onClick={!pageHref ? (event) => event.preventDefault() : undefined}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-bold text-white transition hover:bg-primary-hover"
+            >
+              Abrir pagina
+              <FontAwesomeIcon icon={faUpRightFromSquare} className="size-3.5" />
+            </a>
           </div>
         ) : (
           <button

@@ -4,6 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAuth } from "@/context/AuthContext";
 import {
+  getUserCacheKey,
+  readLocalCache,
+  writeLocalCache,
+} from "@/lib/localCache";
+import {
   faCalendarDays,
   faCheck,
   faClock,
@@ -17,6 +22,7 @@ const initialSummary = {
   pending: 0,
   confirmed: 0,
 };
+const appointmentsCacheTtl = 30 * 1000;
 
 export default function ReservationsView() {
   const { supabase, user } = useAuth();
@@ -46,15 +52,34 @@ export default function ReservationsView() {
       setError(fetchError.message);
       setAppointments([]);
     } else {
-      setAppointments(data ?? []);
+      const nextAppointments = data ?? [];
+      setAppointments(nextAppointments);
+      writeLocalCache(
+        getUserCacheKey(user, "appointments"),
+        nextAppointments,
+        appointmentsCacheTtl,
+      );
     }
 
     setIsLoading(false);
   }, [supabase, user]);
 
   useEffect(() => {
-    queueMicrotask(fetchAppointments);
-  }, [fetchAppointments]);
+    queueMicrotask(() => {
+      if (user) {
+        const cachedAppointments = readLocalCache(
+          getUserCacheKey(user, "appointments"),
+        );
+
+        if (cachedAppointments) {
+          setAppointments(cachedAppointments);
+          setIsLoading(false);
+        }
+      }
+
+      fetchAppointments();
+    });
+  }, [fetchAppointments, user]);
 
   const summary = useMemo(() => buildSummary(appointments), [appointments]);
 
