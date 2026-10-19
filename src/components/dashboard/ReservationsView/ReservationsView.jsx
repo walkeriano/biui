@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAuth } from "@/context/AuthContext";
+import { dateKeyInZone, dayRangeInZone, defaultTimeZone } from "@/lib/booking";
 import {
   getUserCacheKey,
   readLocalCache,
@@ -45,6 +46,8 @@ export default function ReservationsView() {
         "id,customer_email,customer_name,customer_phone,service_name,appointment_at,status,notes,created_at",
       )
       .eq("professional_user_id", user.id)
+      .gte("appointment_at", dayRangeInZone(dateKeyInZone(new Date())).start)
+      .neq("status", "cancelada")
       .order("appointment_at", { ascending: true })
       .limit(100);
 
@@ -242,6 +245,7 @@ function formatDate(date) {
   return new Intl.DateTimeFormat("es", {
     day: "numeric",
     month: "short",
+    timeZone: defaultTimeZone,
   }).format(new Date(date));
 }
 
@@ -249,9 +253,10 @@ function formatTime(date) {
   return new Intl.DateTimeFormat("es", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: defaultTimeZone,
   }).format(new Date(date));
 }
 
 function toDateKey(date) {
-  return date.toISOString().slice(0, 10);
+  return dateKeyInZone(date);
 }

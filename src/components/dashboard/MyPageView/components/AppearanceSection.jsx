@@ -5,86 +5,99 @@ import { inputClassName } from "@/components/dashboard/MyPageView/data";
 import Field from "@/components/dashboard/MyPageView/components/Field";
 import ImagePicker from "@/components/dashboard/MyPageView/components/ImagePicker";
 import SectionHeader from "@/components/dashboard/MyPageView/components/SectionHeader";
+import { faPalette } from "@/lib/fontawesome";
 
-export default function AppearanceSection({ data, handleImage, updateData }) {
+export default function AppearanceSection({
+  data,
+  handleImage,
+  isOpen,
+  onToggle,
+  updateData,
+}) {
   return (
     <article className="rounded-card border border-line bg-surface p-4 shadow-card">
       <SectionHeader
-        number="1"
+        icon={faPalette}
+        isOpen={isOpen}
+        onToggle={onToggle}
         title="Apariencia"
         description="Define los colores, tipografias y el estilo visual de tu pagina."
       />
 
-      <div className="grid gap-5">
-        <ImagePicker
-          label="Logo de la empresa"
-          image={data.logoImage}
-          onChange={handleImage(
-            (image) => updateData("logoImage", image),
-            "brand/logo",
-            "logoImage",
-          )}
-          onClear={() => updateData("logoImage", "")}
-          hint="Se mostrara en el encabezado, confirmaciones y vista publica."
-        />
-        <ColorPicker
-          label="Color principal"
-          value={data.primaryColor}
-          onChange={(color) => updateData("primaryColor", color)}
-        />
-        <ColorPicker
-          label="Color secundario"
-          value={data.secondaryColor}
-          onChange={(color) => updateData("secondaryColor", color)}
-        />
-      </div>
-
-      <div className="mt-5 grid gap-4">
-        <Field label="Tipografia de titulos">
-          <select
-            value={data.titleFont}
-            onChange={(event) => updateData("titleFont", event.target.value)}
-            className={inputClassName}
-          >
-            <option>Playfair Display</option>
-            <option>Georgia</option>
-            <option>Inter</option>
-          </select>
-        </Field>
-        <Field label="Tipografia de texto">
-          <select
-            value={data.textFont}
-            onChange={(event) => updateData("textFont", event.target.value)}
-            className={inputClassName}
-          >
-            <option>Inter</option>
-            <option>Arial</option>
-            <option>Georgia</option>
-          </select>
-        </Field>
-        <Field label="Estilo de botones">
-          <div className="grid gap-2">
-            {["rounded", "square", "minimal"].map((style) => (
-              <button
-                key={style}
-                type="button"
-                onClick={() => updateData("buttonStyle", style)}
-                className={
-                  data.buttonStyle === style
-                    ? "rounded-md border border-success bg-success-soft px-3 py-2 text-[0.8125rem] font-bold text-success"
-                    : "rounded-md border border-line px-3 py-2 text-[0.8125rem] font-bold text-muted"
-                }
-              >
-                {style === "rounded"
-                  ? "Redondeado"
-                  : style === "square"
-                    ? "Cuadrado"
-                    : "Minimalista"}
-              </button>
-            ))}
+      {isOpen ? (
+        <div className="mt-4">
+          <div className="grid gap-5">
+            <ImagePicker
+              label="Logo de la empresa"
+              image={data.logoImage}
+              onChange={handleImage(
+                (image) => updateData("logoImage", image),
+                "brand/logo",
+                "logoImage",
+              )}
+              onClear={() => updateData("logoImage", "")}
+              hint="Se mostrara en el encabezado, confirmaciones y vista publica."
+            />
+            <ColorPicker
+              label="Color principal"
+              value={data.primaryColor}
+              onChange={(color) => updateData("primaryColor", color)}
+            />
+            <ColorPicker
+              label="Color secundario"
+              value={data.secondaryColor}
+              onChange={(color) => updateData("secondaryColor", color)}
+            />
           </div>
-        </Field>
-      </div>
+
+          <div className="mt-5 grid gap-4">
+            <Field label="Tipografia de titulos">
+              <select
+                value={data.titleFont}
+                onChange={(event) => updateData("titleFont", event.target.value)}
+                className={inputClassName}
+              >
+                <option>Playfair Display</option>
+                <option>Georgia</option>
+                <option>Inter</option>
+              </select>
+            </Field>
+            <Field label="Tipografia de texto">
+              <select
+                value={data.textFont}
+                onChange={(event) => updateData("textFont", event.target.value)}
+                className={inputClassName}
+              >
+                <option>Inter</option>
+                <option>Arial</option>
+                <option>Georgia</option>
+              </select>
+            </Field>
+            <Field label="Estilo de botones">
+              <div className="grid gap-2">
+                {["rounded", "square", "minimal"].map((style) => (
+                  <button
+                    key={style}
+                    type="button"
+                    onClick={() => updateData("buttonStyle", style)}
+                    className={
+                      data.buttonStyle === style
+                        ? "rounded-md border border-success bg-success-soft px-3 py-2 text-[0.8125rem] font-bold text-success"
+                        : "rounded-md border border-line px-3 py-2 text-[0.8125rem] font-bold text-muted"
+                    }
+                  >
+                    {style === "rounded"
+                      ? "Redondeado"
+                      : style === "square"
+                        ? "Cuadrado"
+                        : "Minimalista"}
+                  </button>
+                ))}
+              </div>
+            </Field>
+          </div>
+        </div>
+      ) : null}
     </article>
   );
 }

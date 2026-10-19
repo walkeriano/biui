@@ -3,17 +3,9 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
+import { dayRangeInZone, isDateKey, validateBooking } from "@/lib/booking";
+
 const requiredMessage = "Completa los campos obligatorios para reservar.";
-const defaultTimeZone = "Europe/Madrid";
-const weekdayMap = {
-  dom: "Dom",
-  jue: "Jue",
-  lun: "Lun",
-  mar: "Mar",
-  mie: "Mie",
-  sab: "Sab",
-  vie: "Vie",
-};
 
 export async function GET(request) {
   if (!isSupabaseConfigured) {
@@ -32,9 +24,8 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const slug = cleanText(searchParams.get("slug"), 80);
   const date = cleanText(searchParams.get("date"), 10);
-  const dayRange = getDayRange(date);
 
-  if (!slug || !dayRange) {
+  if (!slug || !isDateKey(date)) {
     return NextResponse.json(
       { error: "Indica una pagina y fecha valida." },
       { status: 400 },
@@ -58,7 +49,7 @@ export async function GET(request) {
 
   const { data: page, error: pageError } = await supabase
     .from("professional_pages")
-    .select("id,user_id")
+    .select("id,user_id,availability")
     .eq("slug", slug)
     .eq("published", true)
     .maybeSingle();
@@ -77,12 +68,17 @@ export async function GET(request) {
     );
   }
 
+  const dayRange = dayRangeInZone(date, page.availability?.timeZone);
+  if (!dayRange) {
+    return NextResponse.json({ error: "Fecha no disponible." }, { status: 400 });
+  }
+
   const { data: appointments, error: appointmentsError } = await supabase
     .from("appointments")
     .select("appointment_at,status")
     .eq("professional_user_id", page.user_id)
-    .gte("appointment_at", dayRange.start.toISOString())
-    .lt("appointment_at", dayRange.end.toISOString())
+    .gte("appointment_at", dayRange.start)
+    .lt("appointment_at", dayRange.end)
     .neq("status", "cancelada");
 
   if (appointmentsError) {
@@ -110,8 +106,26 @@ export async function POST(request) {
   let payload;
 
   try {
-    payload = await request.json();
+    const reader = request.body?.getReader();
+    if (!reader) throw new Error("Empty body");
+    const chunks = [];
+    let size = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > 8192) {
+        await reader.cancel();
+        return NextResponse.json({ error: "Solicitud demasiado grande." }, { status: 413 });
+      }
+      chunks.push(value);
+    }
+    payload = JSON.parse(new TextDecoder().decode(Buffer.concat(chunks)));
   } catch {
+    return NextResponse.json({ error: requiredMessage }, { status: 400 });
+  }
+
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     return NextResponse.json({ error: requiredMessage }, { status: 400 });
   }
 
@@ -188,7 +202,7 @@ export async function POST(request) {
     );
   }
 
-  const availabilityError = validateAvailability({
+  const availabilityError = validateBooking({
     appointmentAt,
     availability: page.availability,
     selectedTime,
@@ -251,10 +265,11 @@ function getAdminClient() {
 }
 
 function cleanText(value, maxLength = 500) {
-  return String(value ?? "").trim().slice(0, maxLength);
+  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
 function parseAppointmentDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value)) return null;
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
@@ -266,106 +281,6 @@ function parseAppointmentDate(value) {
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function getDayRange(date) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    return null;
-  }
-
-  const start = new Date(`${date}T00:00:00`);
-
-  if (Number.isNaN(start.getTime())) {
-    return null;
-  }
-
-  const end = new Date(start);
-  end.setDate(start.getDate() + 1);
-
-  return { end, start };
-}
-
-function validateAvailability({
-  appointmentAt,
-  availability,
-  selectedTime,
-  serviceName,
-  services,
-}) {
-  if (appointmentAt < new Date()) {
-    return "Elige una fecha futura para la reserva.";
-  }
-
-  if (!/^\d{2}:\d{2}$/.test(selectedTime)) {
-    return "El horario seleccionado no es valido.";
-  }
-
-  const timeZone = cleanText(availability?.timeZone, 80) || defaultTimeZone;
-  const appointmentTime = formatTimeInZone(appointmentAt, timeZone);
-
-  if (appointmentTime !== selectedTime) {
-    return "El horario seleccionado no coincide con la fecha de la reserva.";
-  }
-
-  const allowedDays = Array.isArray(availability?.days) ? availability.days : [];
-  const appointmentDay = formatWeekdayInZone(appointmentAt, timeZone);
-
-  if (allowedDays.length && !allowedDays.includes(appointmentDay)) {
-    return "El dia seleccionado no esta disponible para reservas.";
-  }
-
-  const allowedServices = Array.isArray(services)
-    ? services.map((service) => service.name).filter(Boolean)
-    : [];
-
-  if (allowedServices.length && !allowedServices.includes(serviceName)) {
-    return "Selecciona un servicio disponible en esta pagina.";
-  }
-
-  const allowedTimes = Array.isArray(availability?.times) ? availability.times : [];
-  if (allowedTimes.length && !allowedTimes.includes(selectedTime)) {
-    return "El horario seleccionado no esta disponible.";
-  }
-
-  return "";
-}
-
-function formatTimeInZone(date, timeZone) {
-  const parts = createDateTimeFormat({
-    hour: "2-digit",
-    hour12: false,
-    minute: "2-digit",
-    timeZone,
-  }).formatToParts(date);
-  const hour = parts.find((part) => part.type === "hour")?.value ?? "";
-  const minute = parts.find((part) => part.type === "minute")?.value ?? "";
-
-  return `${hour}:${minute}`;
-}
-
-function formatWeekdayInZone(date, timeZone) {
-  const weekday = createDateTimeFormat({
-    timeZone,
-    weekday: "short",
-  }).format(date);
-  const normalized = weekday
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f.]/g, "")
-    .toLowerCase()
-    .slice(0, 3);
-
-  return weekdayMap[normalized] ?? "";
-}
-
-function createDateTimeFormat(options) {
-  try {
-    return new Intl.DateTimeFormat("es-ES", options);
-  } catch {
-    return new Intl.DateTimeFormat("es-ES", {
-      ...options,
-      timeZone: defaultTimeZone,
-    });
-  }
 }
 
 function getRateLimitHeaders({ resetAt }) {

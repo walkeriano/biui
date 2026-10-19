@@ -23,6 +23,12 @@ const views = {
   reservations: ReservationsView,
 };
 
+const viewTitles = {
+  home: "Resumen del dia",
+  page: "Personaliza tu sitio web",
+  reservations: "Supervisa tus reservas",
+};
+
 export default function DashboardShell() {
   const router = useRouter();
   const [activeView, setActiveView] = useState("home");
@@ -33,6 +39,7 @@ export default function DashboardShell() {
   const { signOut } = useAuthActions();
   const publicPageLink = useCurrentPublicPageLink();
   const ActiveView = views[activeView] ?? DashboardHome;
+  const activeViewTitle = viewTitles[activeView] ?? viewTitles.home;
   const displayName =
     user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Profesional";
   const initials = displayName
@@ -90,19 +97,15 @@ export default function DashboardShell() {
             >
               <FontAwesomeIcon icon={isNavOpen ? faXmark : faBars} />
             </button>
-            <p className="text-sm font-bold text-foreground">BIUI Dashboard</p>
+            <p className="text-sm font-bold text-foreground">{activeViewTitle}</p>
             <span className="size-11" />
           </header>
 
           <div className="mb-5 hidden items-center justify-between gap-5 rounded-[1rem] border border-line bg-surface-elevated px-5 py-4 shadow-card backdrop-blur lg:flex">
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                Buenos dias, {displayName} 👋
+                {activeViewTitle}
               </h1>
-              <p className="mt-1 text-sm text-muted">
-                Aqui tienes un resumen de tu pagina, reservas y proximos
-                eventos.
-              </p>
             </div>
 
             <div className="flex items-center gap-3">

@@ -16,21 +16,27 @@ import {
 import {
   buildAvailability,
   calendarDays,
-  formatSelectedDay,
 } from "@/lib/availability";
 import { getButtonClassName, getButtonStyle } from "@/components/public-page/theme";
+
+import { appointmentIso, availableTimes, dateKeyInZone, getTimeZone, timeInZone } from "@/lib/booking";
 
 const steps = ["Servicio", "Fecha", "Hora", "Tus datos"];
 
 export default function PublicBookingSection({ page, previewMode = false }) {
+  const timeZone = getTimeZone(page.availability.timeZone);
+  const [monthOffset, setMonthOffset] = useState(0);
+  const todayKey = dateKeyInZone(new Date(), timeZone);
   const availability = useMemo(
     () =>
       buildAvailability({
         days: page.availability.days,
         end: page.availability.end,
         start: page.availability.start,
+        monthOffset,
+        now: new Date(`${todayKey}T00:00:00Z`),
       }),
-    [page.availability.days, page.availability.end, page.availability.start],
+    [page.availability.days, page.availability.end, page.availability.start, monthOffset, todayKey],
   );
   const [hasSelectedService, setHasSelectedService] = useState(false);
   const [selectedDay, setSelectedDay] = useState(
@@ -51,11 +57,11 @@ export default function PublicBookingSection({ page, previewMode = false }) {
   const [bookedTimes, setBookedTimes] = useState([]);
   const [bookedTimesError, setBookedTimesError] = useState("");
   const [isLoadingBookedTimes, setIsLoadingBookedTimes] = useState(false);
-  const selectedDayLabel = formatSelectedDay(selectedDay);
-  const selectedDateKey = useMemo(
-    () => getSelectedDateKey(selectedDay),
-    [selectedDay],
-  );
+  const selectedDateKey = selectedDay ? `${availability.month.key}-${String(selectedDay).padStart(2, "0")}` : "";
+  const selectedDayLabel = selectedDateKey ? new Intl.DateTimeFormat("es", {
+    day: "numeric", month: "long", weekday: "long", timeZone: "UTC",
+  }).format(new Date(`${selectedDateKey}T12:00:00Z`)) : "";
+  const slots = availableTimes(page.availability);
   const selectedTimeIsBooked = bookedTimes.includes(selectedTime);
   const currentStep = getCurrentStep({
     hasSelectedDay,
@@ -69,6 +75,7 @@ export default function PublicBookingSection({ page, previewMode = false }) {
     formData.customerName.trim() &&
     formData.customerPhone.trim() &&
     !selectedTimeIsBooked &&
+    !bookedTimesError &&
     !isLoadingBookedTimes &&
     status.state !== "submitting",
   );
@@ -102,7 +109,7 @@ export default function PublicBookingSection({ page, previewMode = false }) {
 
         setBookedTimes(
           Array.isArray(result.bookedAppointmentAts)
-            ? result.bookedAppointmentAts.map(formatTimeFromIso)
+            ? result.bookedAppointmentAts.map((value) => timeInZone(value, timeZone))
             : [],
         );
       } catch (error) {
@@ -120,7 +127,7 @@ export default function PublicBookingSection({ page, previewMode = false }) {
     fetchBookedTimes();
 
     return () => controller.abort();
-  }, [hasSelectedDay, page.slug, previewMode, selectedDateKey]);
+  }, [hasSelectedDay, page.slug, previewMode, selectedDateKey, timeZone]);
 
   const updateField = (key, value) => {
     setFormData((current) => ({ ...current, [key]: value }));
@@ -148,50 +155,56 @@ export default function PublicBookingSection({ page, previewMode = false }) {
 
     setStatus({ message: "Creando tu reserva...", state: "submitting" });
 
-    const response = await fetch("/api/appointments", {
-      body: JSON.stringify({
-        ...formData,
-        appointmentAt: buildAppointmentIso(selectedDay, selectedTime),
-        selectedTime,
-        serviceName: selectedService,
-        slug: page.slug,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
-    const result = await response.json();
-
-    if (!response.ok) {
-      setStatus({
-        message: result.error || "No se pudo crear la reserva.",
-        state: "error",
+    try {
+      const instant = appointmentIso(selectedDateKey, selectedTime, timeZone);
+      if (!instant) throw new Error("El horario no existe en la zona horaria del profesional.");
+      const response = await fetch("/api/appointments", {
+        body: JSON.stringify({
+          ...formData,
+          appointmentAt: instant,
+          selectedTime,
+          serviceName: selectedService,
+          slug: page.slug,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
       });
-      if (response.status === 409 && selectedTime) {
-        setBookedTimes((current) =>
-          current.includes(selectedTime) ? current : [...current, selectedTime],
-        );
-        setSelectedTime("");
-      }
-      return;
-    }
+      const result = await response.json();
 
-    setFormData({
-      customerEmail: "",
-      customerName: "",
-      customerPhone: "",
-      notes: "",
-      website: "",
-    });
-    setStatus({
-      message: "Reserva creada correctamente. El profesional la vera en su panel.",
-      state: "success",
-    });
-    setBookedTimes((current) =>
-      current.includes(selectedTime) ? current : [...current, selectedTime],
-    );
-    setIsSuccessModalOpen(true);
+      if (!response.ok) {
+        setStatus({
+          message: result.error || "No se pudo crear la reserva.",
+          state: "error",
+        });
+        if (response.status === 409 && selectedTime) {
+          setBookedTimes((current) =>
+            current.includes(selectedTime) ? current : [...current, selectedTime],
+          );
+          setSelectedTime("");
+        }
+        return;
+      }
+
+      setFormData({
+        customerEmail: "",
+        customerName: "",
+        customerPhone: "",
+        notes: "",
+        website: "",
+      });
+      setStatus({
+        message: "Reserva creada correctamente. El profesional la vera en su panel.",
+        state: "success",
+      });
+      setBookedTimes((current) =>
+        current.includes(selectedTime) ? current : [...current, selectedTime],
+      );
+      setIsSuccessModalOpen(true);
+    } catch (error) {
+      setStatus({ message: error.message || "No se pudo conectar. Intentalo de nuevo.", state: "error" });
+    }
   };
 
   return (
@@ -319,6 +332,11 @@ export default function PublicBookingSection({ page, previewMode = false }) {
                 eyebrow="Paso 2"
                 title="Selecciona la fecha"
               >
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <button type="button" disabled={monthOffset === 0} onClick={() => setMonthOffset((value) => value - 1)} className="text-sm font-bold disabled:opacity-40">Mes anterior</button>
+                  <button type="button" disabled={monthOffset >= 12} onClick={() => setMonthOffset((value) => value + 1)} className="text-sm font-bold disabled:opacity-40">Mes siguiente</button>
+                </div>
+                {!availability.month.firstAvailableDay ? <p className="mb-4 text-sm text-muted">No hay fechas disponibles este mes.</p> : null}
                 <CalendarPicker
                   availability={availability}
                   page={page}
@@ -329,6 +347,7 @@ export default function PublicBookingSection({ page, previewMode = false }) {
                     setSelectedTime("");
                     setBookedTimes([]);
                     setBookedTimesError("");
+                    setIsLoadingBookedTimes(!previewMode);
                   }}
                 />
               </StepCard>
@@ -355,10 +374,11 @@ export default function PublicBookingSection({ page, previewMode = false }) {
                   </p>
                 ) : null}
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {availability.slots.map((time) => {
+                  {slots.map((time) => {
                     const isBooked = bookedTimes.includes(time);
                     const isSelected = selectedTime === time;
-                    const isDisabled = isBooked || isLoadingBookedTimes;
+                    const instant = appointmentIso(selectedDateKey, time, timeZone);
+                    const isDisabled = isBooked || isLoadingBookedTimes || Boolean(bookedTimesError) || !instant || new Date(instant) <= new Date();
 
                     return (
                       <button
@@ -444,6 +464,15 @@ export default function PublicBookingSection({ page, previewMode = false }) {
             ) : null}
           </div>
 
+          {currentStep > 1 ? (
+            <button type="button" disabled={status.state === "submitting"} className="mx-auto mt-5 block text-sm font-bold underline" onClick={() => {
+              if (currentStep === 2) setHasSelectedService(false);
+              else if (currentStep === 3) setHasSelectedDay(false);
+              setSelectedTime("");
+              setStatus({ message: "", state: "idle" });
+            }}>Volver al paso anterior</button>
+          ) : null}
+          <p className="mt-4 text-center text-xs text-muted">Horarios del profesional: {timeZone}</p>
           {status.message ? (
             <p
               className={
@@ -655,46 +684,4 @@ function getCurrentStep({ hasSelectedDay, hasSelectedService, selectedTime }) {
   if (hasSelectedDay) return 3;
   if (hasSelectedService) return 2;
   return 1;
-}
-
-function buildAppointmentIso(dayNumber, time) {
-  const [hours, minutes] = time.split(":").map(Number);
-  const today = new Date();
-  const appointment = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    dayNumber,
-    hours,
-    minutes,
-    0,
-    0,
-  );
-
-  return appointment.toISOString();
-}
-
-function getSelectedDateKey(dayNumber) {
-  const today = new Date();
-  const date = new Date(today.getFullYear(), today.getMonth(), dayNumber);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}-${String(date.getDate()).padStart(2, "0")}`;
-}
-
-function formatTimeFromIso(value) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  return `${String(date.getHours()).padStart(2, "0")}:${String(
-    date.getMinutes(),
-  ).padStart(2, "0")}`;
 }

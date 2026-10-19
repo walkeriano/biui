@@ -1,5 +1,5 @@
 export function sanitizeSlug(value) {
-  return String(value)
+  return String(value ?? "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
@@ -7,6 +7,10 @@ export function sanitizeSlug(value) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 64);
+}
+
+export function isReservedSlug(slug) {
+  return ["dashboard", "acceso", "api", "auth", "restablecer-contrasena", "_next", "favicon-ico", "robots-txt", "sitemap-xml"].includes(slug);
 }
 
 export function getFallbackSlug(user) {

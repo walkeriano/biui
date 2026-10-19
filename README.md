@@ -12,9 +12,11 @@ Plataforma web de BIUI para profesionales: landing comercial, acceso con Supabas
 ## Desarrollo
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
+
+Se requiere Node.js 22.22 o posterior.
 
 La app queda disponible en `http://localhost:3000`.
 
@@ -34,7 +36,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ## Supabase
 
-Ejecuta `supabase/schema.sql` en el SQL editor de Supabase para crear:
+Revisa y ejecuta `supabase/schema.sql` en staging antes de producción para crear o actualizar:
 
 - `public.professional_pages`
 - `public.appointments`
@@ -42,6 +44,8 @@ Ejecuta `supabase/schema.sql` en el SQL editor de Supabase para crear:
 - politicas RLS
 - indices y constraints
 - triggers de `updated_at`
+
+El esquema también establece las páginas nuevas como borradores y valida nuevos slugs. El editor publica explícitamente. La restricción de slug es `NOT VALID` para instalaciones existentes: revisa los registros anteriores antes de validarla. Los cambios SQL del repositorio no se aplican automáticamente.
 
 Si solo necesitas reparar o recrear politicas de Storage, ejecuta `supabase/storage-policies.sql`.
 
@@ -68,7 +72,9 @@ El bucket `profesional-assets` es publico para lectura. La escritura queda limit
 - limite basico de frecuencia por IP y pagina
 - honeypot `website`
 
-La zona horaria por defecto para disponibilidad es `Europe/Madrid`.
+La zona horaria por defecto para disponibilidad es `Europe/Madrid`. Tanto el navegador como la API usan la zona del profesional. El calendario permite seleccionar fechas hasta doce meses hacia adelante.
+
+El índice único evita reservas activas con el mismo instante de inicio; todavía no protege solapamientos según la duración del servicio. El rate limit actual vive en memoria de cada proceso y requiere protección compartida antes de escalar a varias instancias.
 
 ## Cache
 
@@ -79,11 +85,15 @@ Para reducir lecturas a Supabase en el plan gratuito, el dashboard usa cache por
 - pagina profesional del editor: 5 minutos
 - slug de pagina publica: 10 minutos
 
-Las paginas publicas tambien usan una cache en memoria del servidor por `slug` durante 60 segundos. En entornos serverless esta cache es oportunista: reduce lecturas cuando una instancia se reutiliza, pero no sustituye una cache compartida externa.
+Las páginas públicas solo se memoizan dentro de una solicitud, para compartir la consulta entre contenido y metadatos. No se conserva una caché entre solicitudes, de modo que una publicación o retirada pueda reflejarse en la siguiente carga. La sesión explícitamente cerrada elimina la caché privada de ese usuario.
 
 ## Verificacion
 
 ```bash
-npm run lint
-npm run build
+npm run check
+npm audit --omit=dev
 ```
+
+`npm run check` ejecuta lint, pruebas de lógica/API con Supabase simulado y compilación. El pipeline de CI ejecuta esas comprobaciones y audita las dependencias de producción.
+
+Consulta [la revisión de producción](docs/production-review.md) para los hallazgos corregidos, los límites de estas pruebas y los pendientes de Supabase, recuperación de contraseña y gestión de reservas. La revisión no aprueba todavía el despliegue a producción.

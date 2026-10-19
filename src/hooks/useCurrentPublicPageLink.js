@@ -58,6 +58,18 @@ export default function useCurrentPublicPageLink() {
     });
   }, [fetchSlug, user]);
 
+  useEffect(() => {
+    if (!user) return undefined;
+    const key = getUserCacheKey(user, "public-page-slug");
+    const updateSlug = (event) => {
+      if (event.detail?.key !== key) return;
+      const nextSlug = readLocalCache(key);
+      if (nextSlug) setSlug(nextSlug);
+    };
+    window.addEventListener("biui:cache-updated", updateSlug);
+    return () => window.removeEventListener("biui:cache-updated", updateSlug);
+  }, [user]);
+
   return {
     href: `/${slug}`,
     isLoading,

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { dateKeyInZone, dayRangeInZone, defaultTimeZone } from "@/lib/booking";
 import {
   getUserCacheKey,
   readLocalCache,
@@ -95,12 +96,15 @@ export default function useDashboardSummary() {
 }
 
 async function fetchAppointments(supabase, userId) {
+  const monthStart = `${dateKeyInZone(new Date()).slice(0, 7)}-01`;
   const { data, error } = await supabase
     .from("appointments")
     .select("id,customer_name,service_name,appointment_at,status,created_at")
     .eq("professional_user_id", userId)
+    .gte("appointment_at", dayRangeInZone(monthStart).start)
+    .neq("status", "cancelada")
     .order("appointment_at", { ascending: true })
-    .limit(50);
+    .limit(1000);
 
   if (error) {
     return { data: [], error };
@@ -112,20 +116,18 @@ async function fetchAppointments(supabase, userId) {
 function buildSummary({ appointments, page }) {
   const now = new Date();
   const todayKey = toDateKey(now);
-  const monthKey = `${now.getFullYear()}-${now.getMonth()}`;
+  const monthKey = todayKey.slice(0, 7);
 
   const todayAppointments = appointments
     .filter((appointment) => toDateKey(new Date(appointment.appointment_at)) === todayKey)
-    .map(mapAppointment)
-    .slice(0, 4);
+    .map(mapAppointment);
 
   const upcomingAppointments = appointments.filter(
     (appointment) => new Date(appointment.appointment_at) >= now,
   );
 
   const monthAppointments = appointments.filter((appointment) => {
-    const date = new Date(appointment.appointment_at);
-    return `${date.getFullYear()}-${date.getMonth()}` === monthKey;
+    return dateKeyInZone(appointment.appointment_at).slice(0, 7) === monthKey;
   });
 
   return {
@@ -136,7 +138,7 @@ function buildSummary({ appointments, page }) {
       (appointment) => normalizeStatus(appointment.status) === "pendiente",
     ).length,
     recentClients: buildRecentClients(appointments),
-    todayAppointments,
+    todayAppointments: todayAppointments.slice(0, 4),
     upcomingAppointments: upcomingAppointments.length,
   };
 }
@@ -144,8 +146,7 @@ function buildSummary({ appointments, page }) {
 function isMissingAppointmentsTable(error) {
   return (
     error.code === "PGRST205" ||
-    error.code === "42P01" ||
-    error.message?.includes("appointments")
+    error.code === "42P01"
   );
 }
 
@@ -183,6 +184,7 @@ function mapAppointment(appointment) {
     time: new Intl.DateTimeFormat("es", {
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: defaultTimeZone,
     }).format(new Date(appointment.appointment_at)),
   };
 }
@@ -198,13 +200,14 @@ function formatStatus(status) {
 }
 
 function toDateKey(date) {
-  return date.toISOString().slice(0, 10);
+  return dateKeyInZone(date);
 }
 
 function formatDate(date) {
   return new Intl.DateTimeFormat("es", {
     day: "numeric",
     month: "short",
+    timeZone: defaultTimeZone,
   }).format(new Date(date));
 }
 

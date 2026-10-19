@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 
-const maxInputSize = 300 * 1024 * 1024;
+const maxInputSize = 20 * 1024 * 1024;
 const maxDimension = 1920;
 const targetBytes = 700 * 1024;
 const qualitySteps = [0.86, 0.8, 0.74, 0.68, 0.62];
@@ -16,20 +16,18 @@ export default function useImageCompressor() {
     setCompressionError("");
     setCompressionStats(null);
 
-    if (!file?.type?.startsWith("image/")) {
-      return { error: null, file };
-    }
-
-    if (file.size > maxInputSize) {
-      const error = {
-        message: "La imagen supera el maximo permitido de 300MB.",
-      };
+    if (!file || !["image/avif", "image/gif", "image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      const error = { message: "Selecciona una imagen JPG, PNG, WebP, GIF o AVIF." };
       setCompressionError(error.message);
       return { error, file: null };
     }
 
-    if (file.type === "image/svg+xml") {
-      return { error: null, file };
+    if (file.size > maxInputSize) {
+      const error = {
+        message: "La imagen supera el maximo permitido de 20MB.",
+      };
+      setCompressionError(error.message);
+      return { error, file: null };
     }
 
     setIsCompressing(true);

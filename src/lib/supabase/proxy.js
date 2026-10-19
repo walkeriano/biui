@@ -17,6 +17,13 @@ export async function updateSession(request) {
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
   let supabaseResponse = NextResponse.next({ request });
 
+  if (!isSupabaseConfigured && isProtectedRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/acceso";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
   if (!isSupabaseConfigured || (!isProtectedRoute && !isAuthRoute)) {
     return supabaseResponse;
   }

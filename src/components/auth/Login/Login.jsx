@@ -14,6 +14,7 @@ import {
 } from "@/lib/fontawesome";
 import { useAuth } from "@/context/AuthContext";
 import useAuthActions from "@/hooks/useAuthActions";
+import { safeNextPath } from "@/lib/authRedirect";
 
 const fieldClassName =
   "h-12 w-full appearance-none rounded-md border border-line bg-surface px-4 text-sm text-foreground placeholder:text-muted transition focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent-soft";
@@ -27,7 +28,7 @@ export default function Login({ onSwitchToRegister }) {
   const searchParams = useSearchParams();
   const { isConfigured } = useAuth();
   const { resetPassword, signIn } = useAuthActions();
-  const nextPath = searchParams.get("next") || "/dashboard";
+  const nextPath = safeNextPath(searchParams.get("next"));
 
   const updateForm = (key, value) => {
     setForm((current) => ({ ...current, [key]: value }));

@@ -9,13 +9,31 @@ create table if not exists public.professional_pages (
   services jsonb not null default '[]'::jsonb,
   contact jsonb not null default '{}'::jsonb,
   availability jsonb not null default '{}'::jsonb,
-  published boolean not null default true,
+  published boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
 create unique index if not exists professional_pages_user_id_key
   on public.professional_pages(user_id);
+
+-- Also update existing installations when this schema is reapplied.
+alter table public.professional_pages alter column published set default false;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'professional_pages_slug_check'
+      and conrelid = 'public.professional_pages'::regclass
+  ) then
+    alter table public.professional_pages add constraint professional_pages_slug_check
+      check (
+        slug ~ '^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$'
+        and slug not in ('dashboard', 'acceso', 'api', 'auth', 'restablecer-contrasena', 'robots-txt', 'sitemap-xml', 'favicon-ico')
+      ) not valid;
+  end if;
+end $$;
 
 alter table public.professional_pages enable row level security;
 
@@ -49,8 +67,12 @@ create policy "Professionals can delete their page"
   for delete
   using (auth.uid() = user_id);
 
-insert into storage.buckets (id, name, public)
-values ('profesional-assets', 'profesional-assets', true)
+insert into storage.buckets (id, name, public, allowed_mime_types, file_size_limit)
+values (
+  'profesional-assets', 'profesional-assets', true,
+  array['image/avif', 'image/gif', 'image/jpeg', 'image/png', 'image/webp'],
+  5242880
+)
 on conflict (id) do update
 set
   allowed_mime_types = array[
@@ -58,7 +80,6 @@ set
     'image/gif',
     'image/jpeg',
     'image/png',
-    'image/svg+xml',
     'image/webp'
   ],
   file_size_limit = 5242880,

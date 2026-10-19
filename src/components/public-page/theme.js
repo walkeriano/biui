@@ -1,3 +1,6 @@
+import { normalizeExternalUrl } from "@/lib/urls";
+export { normalizeExternalUrl } from "@/lib/urls";
+
 export function getButtonClassName(buttonStyle, { pill = false } = {}) {
   const radiusClassName =
     buttonStyle === "square"
@@ -39,20 +42,4 @@ export function getSocialLinks(contact) {
       normalizeExternalUrl(url),
     ])
     .filter(([, , , url]) => Boolean(url));
-}
-
-export function normalizeExternalUrl(url) {
-  if (!url || typeof url !== "string") {
-    return "";
-  }
-
-  const trimmedUrl = url.trim();
-
-  if (!trimmedUrl) {
-    return "";
-  }
-
-  return /^https?:\/\//i.test(trimmedUrl)
-    ? trimmedUrl
-    : `https://${trimmedUrl}`;
 }

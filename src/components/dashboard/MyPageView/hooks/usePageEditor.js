@@ -33,6 +33,11 @@ export default function usePageEditor() {
     }),
   );
   const hydratedPageId = useRef("");
+  const previewUrls = useRef(new Set());
+  useEffect(() => {
+    const urls = previewUrls.current;
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, []);
   const { isUploading, uploadError, uploadImage } = useImageUpload();
   const {
     editorState,
@@ -44,7 +49,7 @@ export default function usePageEditor() {
   } = useProfessionalPage();
 
   useEffect(() => {
-    if (!page?.id || hydratedPageId.current === page.id) {
+    if (isLoading || error || !page?.id || hydratedPageId.current === page.id) {
       return undefined;
     }
 
@@ -69,7 +74,7 @@ export default function usePageEditor() {
 
     queueMicrotask(hydrateEditor);
     return undefined;
-  }, [editorState, page]);
+  }, [editorState, error, isLoading, page]);
 
   const updateData = (key, value) => {
     setData((current) => ({ ...current, [key]: value }));
@@ -94,6 +99,7 @@ export default function usePageEditor() {
 
     setFeedback("Imagen lista. Se guardara en Storage al publicar cambios.");
     const localPreviewUrl = URL.createObjectURL(file);
+    previewUrls.current.add(localPreviewUrl);
     setter(localPreviewUrl);
     setPendingImages((current) => ({
       ...current,
@@ -119,6 +125,7 @@ export default function usePageEditor() {
 
     setFeedback("Imagen del servicio lista. Se guardara en Storage al publicar.");
     const localPreviewUrl = URL.createObjectURL(file);
+    previewUrls.current.add(localPreviewUrl);
     updateService(id, "image", localPreviewUrl);
     setPendingImages((current) => ({
       ...current,
@@ -160,86 +167,94 @@ export default function usePageEditor() {
   };
 
   const handleSavePage = async () => {
-    setFeedback("");
-    setPublishStatus({
-      href: "",
-      message: "Estamos preparando tu pagina y guardando imagenes.",
-      state: "publishing",
-    });
-
-    const prepared = await uploadPendingImages({
-      data,
-      heroImage,
-      pendingImages,
-      profileImage,
-      services,
-      uploadImage,
-    });
-
-    if (prepared.error) {
-      const message = prepared.error.message || uploadError;
-      setFeedback(message);
+    if (isLoading || publishStatus.state === "publishing") return;
+    try {
+      setFeedback("");
       setPublishStatus({
         href: "",
-        message,
-        state: "error",
+        message: "Estamos preparando tu pagina y guardando imagenes.",
+        state: "publishing",
       });
-      return { error: prepared.error };
+
+      const prepared = await uploadPendingImages({
+        data,
+        heroImage,
+        pendingImages,
+        profileImage,
+        services,
+        uploadImage,
+      });
+
+      if (prepared.error) {
+        const message = prepared.error.message || uploadError;
+        setFeedback(message);
+        setPublishStatus({
+          href: "",
+          message,
+          state: "error",
+        });
+        return { error: prepared.error };
+      }
+
+      setData(prepared.data);
+      setHeroImage(prepared.heroImage);
+      setProfileImage(prepared.profileImage);
+      setServices(prepared.services);
+      setPendingImages(createEmptyPendingImages());
+
+      setPublishStatus({
+        href: "",
+        message: "Guardando datos en Supabase y publicando tu landing.",
+        state: "publishing",
+      });
+
+      const result = await savePage({
+        availableDays,
+        data: {
+          ...prepared.data,
+          heroImage: sanitizeStoredImageUrl(prepared.heroImage),
+          logoImage: sanitizeStoredImageUrl(prepared.data.logoImage),
+          profileImage: sanitizeStoredImageUrl(prepared.profileImage),
+        },
+        services: prepared.services.filter(
+          (service) =>
+            service.name ||
+            service.description ||
+            service.price ||
+            service.image,
+        ),
+      });
+
+      const message = result.error
+        ? result.error.message
+        : `Cambios publicados correctamente en /${result.data.slug}.`;
+
+      setFeedback(message);
+      setPublishStatus({
+        href: result.error ? "" : `/${result.data.slug}`,
+        message,
+        state: result.error ? "error" : "success",
+      });
+
+      if (!result.error) {
+        setSavedSnapshot(
+          createEditorSnapshot({
+            availableDays,
+            data: prepared.data,
+            heroImage: prepared.heroImage,
+            profileImage: prepared.profileImage,
+            services: prepared.services,
+          }),
+        );
+      }
+
+      return result;
+    } catch {
+      const message = "No se pudo publicar. Revisa tu conexion e intentalo de nuevo.";
+      setFeedback(message);
+      setPublishStatus({ href: "", message, state: "error" });
+      return { error: { message } };
     }
-
-    setData(prepared.data);
-    setHeroImage(prepared.heroImage);
-    setProfileImage(prepared.profileImage);
-    setServices(prepared.services);
-    setPendingImages(createEmptyPendingImages());
-
-    setPublishStatus({
-      href: "",
-      message: "Guardando datos en Supabase y publicando tu landing.",
-      state: "publishing",
-    });
-
-    const result = await savePage({
-      availableDays,
-      data: {
-        ...prepared.data,
-        heroImage: sanitizeStoredImageUrl(prepared.heroImage),
-        logoImage: sanitizeStoredImageUrl(prepared.data.logoImage),
-        profileImage: sanitizeStoredImageUrl(prepared.profileImage),
-      },
-      services: prepared.services.filter(
-        (service) =>
-          service.name ||
-          service.description ||
-          service.price ||
-          service.image,
-      ),
-    });
-
-    const message = result.error
-      ? result.error.message
-      : `Cambios publicados correctamente en /${result.data.slug}.`;
-
-    setFeedback(message);
-    setPublishStatus({
-      href: result.error ? "" : `/${result.data.slug}`,
-      message,
-      state: result.error ? "error" : "success",
-    });
-
-    if (!result.error) {
-      setSavedSnapshot(
-        createEditorSnapshot({
-          availableDays,
-          data: prepared.data,
-          heroImage: prepared.heroImage,
-          profileImage: prepared.profileImage,
-          services: prepared.services,
-        }),
-      );
-    }
-
-    return result;
   };
 
   const closePublishStatus = () => {

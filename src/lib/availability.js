@@ -2,9 +2,9 @@ export const calendarDays = ["L", "M", "X", "J", "V", "S", "D"];
 
 const dayNames = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
 
-export function buildAvailability({ days = [], end = "20:00", start = "09:00" }) {
+export function buildAvailability({ days = [], end = "20:00", start = "09:00", monthOffset = 0, now = new Date() }) {
   const slots = buildTimeSlots(start, end);
-  const month = buildCurrentMonth(days);
+  const month = buildCurrentMonth(days, { monthOffset, now });
 
   return {
     month,
@@ -22,6 +22,8 @@ export function buildTimeSlots(start, end, intervalMinutes = 60) {
 
   const slots = [];
 
+  if (!Number.isFinite(intervalMinutes) || intervalMinutes <= 0) return slots;
+
   for (
     let current = startMinutes;
     current < endMinutes;
@@ -33,14 +35,13 @@ export function buildTimeSlots(start, end, intervalMinutes = 60) {
   return slots;
 }
 
-export function buildCurrentMonth(availableDays) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const year = today.getFullYear();
-  const month = today.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const totalDays = new Date(year, month + 1, 0).getDate();
-  const leadingEmptyDays = (firstDay.getDay() + 6) % 7;
+export function buildCurrentMonth(availableDays, { monthOffset = 0, now = new Date() } = {}) {
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const firstDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + monthOffset, 1));
+  const year = firstDay.getUTCFullYear();
+  const month = firstDay.getUTCMonth();
+  const totalDays = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const leadingEmptyDays = (firstDay.getUTCDay() + 6) % 7;
   const cells = [];
 
   for (let index = 0; index < leadingEmptyDays; index += 1) {
@@ -48,8 +49,8 @@ export function buildCurrentMonth(availableDays) {
   }
 
   for (let dayNumber = 1; dayNumber <= totalDays; dayNumber += 1) {
-    const date = new Date(year, month, dayNumber);
-    const dayName = dayNames[date.getDay()];
+    const date = new Date(Date.UTC(year, month, dayNumber));
+    const dayName = dayNames[date.getUTCDay()];
 
     cells.push({
       dayName,
@@ -64,15 +65,16 @@ export function buildCurrentMonth(availableDays) {
 
   const firstAvailableDay =
     cells.find((cell) => cell.dayNumber && cell.isAvailable)?.dayNumber ??
-    cells.find((cell) => cell.dayNumber)?.dayNumber ??
-    1;
+    null;
 
   return {
     cells,
+    key: `${year}-${String(month + 1).padStart(2, "0")}`,
     firstAvailableDay,
     label: new Intl.DateTimeFormat("es", {
       month: "long",
       year: "numeric",
+      timeZone: "UTC",
     }).format(firstDay),
   };
 }
@@ -89,6 +91,7 @@ export function formatSelectedDay(dayNumber) {
 }
 
 function timeToMinutes(time) {
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(time))) return null;
   const [hours, minutes] = String(time).split(":").map(Number);
 
   if (

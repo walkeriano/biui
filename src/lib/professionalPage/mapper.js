@@ -2,17 +2,16 @@ import {
   defaultAvailableDays,
   defaultPageData,
   initialServices,
-  publicFallbackServices,
   publicPageFallbackData,
-} from "@/components/dashboard/MyPageView/data";
+} from "./defaults.js";
 import { buildTimeSlots } from "@/lib/availability";
 import { sanitizeSlug } from "@/lib/slug";
-import { normalizeExternalUrl } from "@/components/public-page/theme";
+import { normalizeExternalUrl } from "../urls.js";
 
 export const defaultProfessional = {
-  name: "Laura Martin",
-  title: "Psicologa",
-  avatarInitials: "LM",
+  name: "Profesional",
+  title: "",
+  avatarInitials: "P",
   logoImage: "",
 };
 
@@ -25,24 +24,24 @@ const defaultTheme = {
 };
 
 const defaultHero = {
-  label: publicPageFallbackData.heroLabel,
-  title: publicPageFallbackData.heroTitle,
-  text: publicPageFallbackData.heroText,
+  label: "",
+  title: "",
+  text: "",
   image: "",
 };
 
 const defaultAbout = {
-  title: publicPageFallbackData.profileTitle,
-  subtitle: publicPageFallbackData.profileSubtitle,
-  description: publicPageFallbackData.profileDescription,
+  title: "",
+  subtitle: "",
+  description: "",
   image: "",
 };
 
 const defaultContact = {
-  city: publicPageFallbackData.city,
-  address: publicPageFallbackData.address,
-  phone: publicPageFallbackData.phone,
-  email: publicPageFallbackData.email,
+  city: "",
+  address: "",
+  phone: "",
+  email: "",
   socialFacebook: publicPageFallbackData.socialFacebook,
   socialInstagram: publicPageFallbackData.socialInstagram,
   socialYoutube: publicPageFallbackData.socialYoutube,
@@ -157,7 +156,7 @@ export function pagePayloadToEditorState(page) {
       scheduleStart: page.availability?.start ?? defaultPageData.scheduleStart,
       scheduleEnd: page.availability?.end ?? defaultPageData.scheduleEnd,
     },
-    services: page.services?.length
+    services: Array.isArray(page.services)
       ? page.services.map((service) => ({
           ...service,
           image: sanitizeStoredImageUrl(service.image),
@@ -184,12 +183,12 @@ export function databaseRowToPublicPage(row) {
       ...(row.about ?? {}),
       image: sanitizeStoredImageUrl(row.about?.image),
     },
-    services: row.services?.length
+    services: Array.isArray(row.services)
       ? row.services.map((service) => ({
           ...service,
           image: sanitizeStoredImageUrl(service.image),
         }))
-      : publicFallbackServices,
+      : [],
     contact: { ...defaultContact, ...(row.contact ?? {}) },
     availability: { ...defaultAvailability, ...(row.availability ?? {}) },
     published: row.published,
@@ -201,9 +200,11 @@ export function sanitizeStoredImageUrl(url) {
     return "";
   }
 
-  if (url.startsWith("blob:") || url.startsWith("data:")) {
+  if (url.startsWith("/") && !url.startsWith("//")) return url;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" ? parsed.href : "";
+  } catch {
     return "";
   }
-
-  return url;
 }

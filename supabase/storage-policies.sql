@@ -1,5 +1,9 @@
-insert into storage.buckets (id, name, public)
-values ('profesional-assets', 'profesional-assets', true)
+insert into storage.buckets (id, name, public, allowed_mime_types, file_size_limit)
+values (
+  'profesional-assets', 'profesional-assets', true,
+  array['image/avif', 'image/gif', 'image/jpeg', 'image/png', 'image/webp'],
+  5242880
+)
 on conflict (id) do update
 set
   allowed_mime_types = array[
@@ -7,7 +11,6 @@ set
     'image/gif',
     'image/jpeg',
     'image/png',
-    'image/svg+xml',
     'image/webp'
   ],
   file_size_limit = 5242880,

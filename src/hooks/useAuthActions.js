@@ -2,9 +2,10 @@
 
 import { useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { clearUserCache } from "@/lib/localCache";
 
 export default function useAuthActions() {
-  const { supabase } = useAuth();
+  const { supabase, user } = useAuth();
 
   const ensureClient = useCallback(() => {
     if (!supabase) {
@@ -49,8 +50,10 @@ export default function useAuthActions() {
   const signOut = useCallback(async () => {
     const client = ensureClient();
     if (client.error) return client;
-    return client.supabase.auth.signOut();
-  }, [ensureClient]);
+    const result = await client.supabase.auth.signOut();
+    if (!result.error) clearUserCache(user);
+    return result;
+  }, [ensureClient, user]);
 
   const resetPassword = useCallback(
     async (email) => {

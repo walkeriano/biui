@@ -1,9 +1,21 @@
+"use client";
+
+import { useState } from "react";
 import AboutSection from "@/components/dashboard/MyPageView/components/AboutSection";
 import AppearanceSection from "@/components/dashboard/MyPageView/components/AppearanceSection";
 import AvailabilitySection from "@/components/dashboard/MyPageView/components/AvailabilitySection";
 import HeroSection from "@/components/dashboard/MyPageView/components/HeroSection";
 import LocationSection from "@/components/dashboard/MyPageView/components/LocationSection";
 import ServicesSection from "@/components/dashboard/MyPageView/components/ServicesSection";
+
+const sectionIds = [
+  "appearance",
+  "hero",
+  "about",
+  "services",
+  "location",
+  "availability",
+];
 
 export default function EditorPanel({
   addService,
@@ -15,6 +27,9 @@ export default function EditorPanel({
   hasChanges,
   heroImage,
   isSaving,
+  isLoading,
+  hasExistingPage,
+  publishStatus,
   isUploading,
   profileImage,
   removeService,
@@ -25,23 +40,40 @@ export default function EditorPanel({
   updateData,
   updateService,
 }) {
+  const [openSections, setOpenSections] = useState({});
+
+  const toggleSection = (sectionId) => {
+    setOpenSections((current) => ({
+      ...current,
+      [sectionId]: !current[sectionId],
+    }));
+  };
+
+  const isSectionOpen = (sectionId) => Boolean(openSections[sectionId]);
+
   return (
     <section className="grid gap-4">
       <AppearanceSection
         data={data}
         handleImage={handleImage}
+        isOpen={isSectionOpen(sectionIds[0])}
+        onToggle={() => toggleSection(sectionIds[0])}
         updateData={updateData}
       />
       <HeroSection
         data={data}
         handleImage={handleImage}
         heroImage={heroImage}
+        isOpen={isSectionOpen(sectionIds[1])}
+        onToggle={() => toggleSection(sectionIds[1])}
         setHeroImage={setHeroImage}
         updateData={updateData}
       />
       <AboutSection
         data={data}
         handleImage={handleImage}
+        isOpen={isSectionOpen(sectionIds[2])}
+        onToggle={() => toggleSection(sectionIds[2])}
         profileImage={profileImage}
         setProfileImage={setProfileImage}
         updateData={updateData}
@@ -49,14 +81,23 @@ export default function EditorPanel({
       <ServicesSection
         addService={addService}
         handleServiceImage={handleServiceImage}
+        isOpen={isSectionOpen(sectionIds[3])}
+        onToggle={() => toggleSection(sectionIds[3])}
         removeService={removeService}
         services={services}
         updateService={updateService}
       />
-      <LocationSection data={data} updateData={updateData} />
+      <LocationSection
+        data={data}
+        isOpen={isSectionOpen(sectionIds[4])}
+        onToggle={() => toggleSection(sectionIds[4])}
+        updateData={updateData}
+      />
       <AvailabilitySection
         availableDays={availableDays}
         data={data}
+        isOpen={isSectionOpen(sectionIds[5])}
+        onToggle={() => toggleSection(sectionIds[5])}
         toggleAvailableDay={toggleAvailableDay}
         updateData={updateData}
       />
@@ -69,7 +110,7 @@ export default function EditorPanel({
         <button
           type="button"
           onClick={handleSavePage}
-          disabled={!hasChanges || isSaving || isUploading}
+          disabled={(!hasChanges && hasExistingPage) || isLoading || isSaving || isUploading || publishStatus?.state === "publishing"}
           className="mt-4 h-11 w-full rounded-md bg-accent px-4 text-sm font-bold text-white shadow-card transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSaving ? "Publicando..." : hasChanges ? "Publicar cambios" : "Sin cambios pendientes"}

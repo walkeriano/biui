@@ -8,6 +8,13 @@ export function checkRateLimit({
   limit = 8,
 }) {
   const now = Date.now();
+  // Bound process memory even when requests use arbitrary slugs/IPs.
+  for (const [bucketKey, value] of buckets) {
+    if (value.resetAt <= now) buckets.delete(bucketKey);
+  }
+  if (!buckets.has(key) && buckets.size >= 10000) {
+    return { isLimited: true, remaining: 0, resetAt: now + intervalMs };
+  }
   const bucket = buckets.get(key);
 
   if (!bucket || bucket.resetAt <= now) {

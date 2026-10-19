@@ -35,6 +35,7 @@ export function writeLocalCache(key, value, ttlMs) {
         version,
       }),
     );
+    window.dispatchEvent(new CustomEvent("biui:cache-updated", { detail: { key } }));
   } catch {
     // Storage can be full or blocked; the app should keep working without cache.
   }
@@ -54,10 +55,26 @@ export function getUserCacheKey(user, key) {
   return `user:${user?.id ?? "anonymous"}:${key}`;
 }
 
+export function clearUserCache(user) {
+  if (!user?.id || !canUseStorage()) return;
+  try {
+    const userPrefix = `${prefix}user:${user.id}:`;
+    for (const key of Object.keys(window.localStorage)) {
+      if (key.startsWith(userPrefix)) window.localStorage.removeItem(key);
+    }
+  } catch {
+    // Cache cleanup must not prevent sign-out.
+  }
+}
+
 function getCacheKey(key) {
   return `${prefix}${key}`;
 }
 
 function canUseStorage() {
-  return typeof window !== "undefined" && Boolean(window.localStorage);
+  try {
+    return typeof window !== "undefined" && Boolean(window.localStorage);
+  } catch {
+    return false;
+  }
 }
