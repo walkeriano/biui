@@ -12,7 +12,7 @@ export function readLocalCache(key) {
 
     const entry = JSON.parse(rawValue);
 
-    if (entry.version !== version || Date.now() > entry.expiresAt) {
+    if (!entry || entry.version !== version || !Number.isFinite(entry.expiresAt) || Date.now() >= entry.expiresAt) {
       window.localStorage.removeItem(getCacheKey(key));
       return null;
     }

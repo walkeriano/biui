@@ -52,7 +52,11 @@ export default function EditorPanel({
   const isSectionOpen = (sectionId) => Boolean(openSections[sectionId]);
 
   return (
-    <section className="grid gap-4">
+    <fieldset
+      disabled={isLoading || isSaving || isUploading || publishStatus?.state === "publishing"}
+      aria-busy={isLoading}
+      className="grid min-w-0 gap-4"
+    >
       <AppearanceSection
         data={data}
         handleImage={handleImage}
@@ -116,6 +120,6 @@ export default function EditorPanel({
           {isSaving ? "Publicando..." : hasChanges ? "Publicar cambios" : "Sin cambios pendientes"}
         </button>
       </article>
-    </section>
+    </fieldset>
   );
 }

@@ -32,7 +32,7 @@ export default function usePageEditor() {
       services: initialServices,
     }),
   );
-  const hydratedPageId = useRef("");
+  const [hydratedPageId, setHydratedPageId] = useState("");
   const previewUrls = useRef(new Set());
   useEffect(() => {
     const urls = previewUrls.current;
@@ -49,12 +49,12 @@ export default function usePageEditor() {
   } = useProfessionalPage();
 
   useEffect(() => {
-    if (isLoading || error || !page?.id || hydratedPageId.current === page.id) {
+    if (isLoading || error || !page?.id || hydratedPageId === page.id) {
       return undefined;
     }
 
     const hydrateEditor = () => {
-      hydratedPageId.current = page.id;
+      setHydratedPageId(page.id);
       setData(editorState.data);
       setServices(editorState.services);
       setAvailableDays(editorState.availableDays);
@@ -74,7 +74,7 @@ export default function usePageEditor() {
 
     queueMicrotask(hydrateEditor);
     return undefined;
-  }, [editorState, error, isLoading, page]);
+  }, [editorState, error, hydratedPageId, isLoading, page]);
 
   const updateData = (key, value) => {
     setData((current) => ({ ...current, [key]: value }));
@@ -273,7 +273,7 @@ export default function usePageEditor() {
     handleSavePage,
     heroImage,
     hasChanges,
-    isLoading,
+    isLoading: isLoading || Boolean(!error && page?.id && hydratedPageId !== page.id),
     isSaving,
     isUploading,
     hasExistingPage: Boolean(page?.id),

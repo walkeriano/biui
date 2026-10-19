@@ -1,0 +1,113 @@
+{
+  "checkedAt": "2026-10-19T12:38:39.355Z",
+  "runId": "9313b820",
+  "results": [
+    {
+      "name": "Anonymous database connection and private appointments",
+      "ok": true
+    },
+    {
+      "name": "Server database connection",
+      "ok": true
+    },
+    {
+      "name": "Storage bucket reachable (configuration snapshot)",
+      "ok": true,
+      "detail": {
+        "limit": null,
+        "allowedTypes": null
+      }
+    },
+    {
+      "name": "Create and authenticate two temporary users without sending email",
+      "ok": true
+    },
+    {
+      "name": "Database defaults new pages to private drafts",
+      "ok": false,
+      "detail": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "name": "Drafts are visible only to their owner",
+      "ok": true
+    },
+    {
+      "name": "Storage rejects writing to another owner folder",
+      "ok": true
+    },
+    {
+      "name": "Storage rejects SVG for new uploads",
+      "ok": false,
+      "detail": "Remote bucket still allows SVG"
+    },
+    {
+      "name": "Real browser compression: size, dimensions, alpha, invalid input and encoder fallback",
+      "ok": true,
+      "detail": {
+        "before": 14092468,
+        "after": 696900,
+        "saved": 95,
+        "width": 1536,
+        "height": 960,
+        "type": "image/webp"
+      }
+    },
+    {
+      "name": "Browser login with Supabase session and dashboard proxy",
+      "ok": true
+    },
+    {
+      "name": "Create and publish page from editor with compressed image uploaded to real Storage",
+      "ok": true
+    },
+    {
+      "name": "Published page renders publicly in another timezone",
+      "ok": true
+    },
+    {
+      "name": "Landing booking is created and visible only to its professional",
+      "ok": true
+    },
+    {
+      "name": "Direct anonymous inserts cannot bypass the booking API",
+      "ok": false,
+      "detail": "Anonymous insert bypassed API"
+    },
+    {
+      "name": "Two concurrent real reservations yield one success and one conflict",
+      "ok": true
+    },
+    {
+      "name": "Real reservation appears in dashboard",
+      "ok": true
+    },
+    {
+      "name": "Republish refreshes public content, old slug and dashboard link without stale cache",
+      "ok": true
+    },
+    {
+      "name": "Browser cache contains the last published version",
+      "ok": true
+    },
+    {
+      "name": "Sign-out clears the temporary user cache",
+      "ok": true
+    },
+    {
+      "name": "Unpublish removes public page immediately",
+      "ok": true
+    },
+    {
+      "name": "No uncaught browser errors in editor",
+      "ok": true
+    },
+    {
+      "name": "Cleanup temporary assets and user",
+      "ok": true
+    },
+    {
+      "name": "Cleanup temporary assets and user",
+      "ok": true
+    }
+  ]
+}

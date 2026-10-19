@@ -1,5 +1,7 @@
 # Revisión de producción — 19 de octubre de 2026
 
+Actualización tras reactivar el proyecto: la conexión real ya funciona. Consulta [la verificación posterior](supabase-verification.md) y sus resultados de navegador. Se confirmaron configuraciones remotas pendientes, incluida la inserción anónima de reservas. Lo que sigue documenta la primera revisión.
+
 **Resultado: todavía no aprobar producción.** La aplicación compila y se corrigieron problemas de publicación, reservas y seguridad. La integración real con Supabase y los recorridos completos en navegador siguen sin estar verificados. Las pruebas de API usan un cliente de base de datos simulado; no demuestran que las políticas o los índices estén instalados en el proyecto remoto.
 
 ## Alcance y arquitectura

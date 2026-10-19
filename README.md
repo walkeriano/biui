@@ -78,7 +78,7 @@ El índice único evita reservas activas con el mismo instante de inicio; todav�
 
 ## Cache
 
-Para reducir lecturas a Supabase en el plan gratuito, el dashboard usa cache por usuario en `localStorage` con TTL corto:
+El dashboard conserva una lectura provisional por usuario en `localStorage` con TTL corto mientras revalida al montar las vistas. Esta estrategia mejora la presentación inicial, pero no evita todas las consultas a Supabase:
 
 - resumen del dashboard: 60 segundos
 - reservas: 30 segundos
@@ -97,3 +97,5 @@ npm audit --omit=dev
 `npm run check` ejecuta lint, pruebas de lógica/API con Supabase simulado y compilación. El pipeline de CI ejecuta esas comprobaciones y audita las dependencias de producción.
 
 Consulta [la revisión de producción](docs/production-review.md) para los hallazgos corregidos, los límites de estas pruebas y los pendientes de Supabase, recuperación de contraseña y gestión de reservas. La revisión no aprueba todavía el despliegue a producción.
+
+Tras reactivar Supabase se ejecutaron pruebas de navegador contra el backend real. Consulta [la verificación de conexión, caché, imágenes y publicación](docs/supabase-verification.md). Hay una corrección remota pendiente en `supabase/production-hardening.sql` para bloquear inserts anónimos de reservas, limitar Storage y establecer borradores por defecto.

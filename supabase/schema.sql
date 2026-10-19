@@ -207,6 +207,8 @@ create unique index if not exists appointments_active_slot_key
 
 alter table public.appointments enable row level security;
 
+revoke insert on public.appointments from anon, authenticated;
+
 drop policy if exists "Customers can create appointments on published pages"
   on public.appointments;
 drop policy if exists "Professionals can read their appointments"

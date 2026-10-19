@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import PublicPage from "@/components/public-page/PublicPage";
 import { buildTimeSlots } from "@/lib/availability";
 import { sanitizeSlug } from "@/lib/slug";
+import { useAuth } from "@/context/AuthContext";
 
 export default function PreviewPage({
   availableDays,
@@ -14,7 +15,9 @@ export default function PreviewPage({
   services,
   viewport,
 }) {
-const page = useMemo(
+  const { user } = useAuth();
+  const professionalName = user?.user_metadata?.full_name || user?.user_metadata?.name || "Profesional";
+  const page = useMemo(
     () => ({
       about: {
         description: data.profileDescription,
@@ -44,10 +47,10 @@ const page = useMemo(
         title: data.heroTitle,
       },
       professional: {
-        avatarInitials: "LM",
+        avatarInitials: professionalName.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase(),
         logoImage: data.logoImage,
-        name: "Laura Martin",
-        title: "Psicologa",
+        name: professionalName,
+        title: data.profileSubtitle || "",
       },
       services,
       slug: sanitizeSlug(data.publicSlug) || "vista-previa",
@@ -59,7 +62,7 @@ const page = useMemo(
         titleFont: data.titleFont,
       },
     }),
-    [availableDays, data, heroImage, profileImage, services],
+    [availableDays, data, heroImage, profileImage, services, professionalName],
   );
   const previewWidth = viewport?.width ?? 1280;
   const previewZoom = previewWidth < 600 ? 0.92 : 0.56;

@@ -106,8 +106,7 @@ export default function ServicesSection({
                           Eliminar imagen
                         </button>
                         <p className="text-[0.75rem] leading-5 text-muted">
-                          Recomendado: 800x600px. Luego conectaremos esta imagen con
-                          Supabase Storage.
+                          Recomendado: 800x600px. La imagen se guardara al publicar.
                         </p>
                       </div>
                     </div>
