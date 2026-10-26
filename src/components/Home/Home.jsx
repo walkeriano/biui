@@ -10,7 +10,6 @@ export default function Home() {
       <div className="sticky top-0 z-30 px-4 pt-4 sm:pt-6 sm:px-6 lg:px-8">
         <Header />
       </div>
-
       <BenefitsSection />
       <SubscriptionContactSection />
       <LandingFooter />

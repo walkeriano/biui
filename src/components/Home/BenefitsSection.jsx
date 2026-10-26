@@ -91,7 +91,7 @@ export default function BenefitsSection() {
       <div className="relative z-10 mx-auto max-w-[96rem]">
         <div className="mx-auto max-w-6xl text-center">
           <p className="mx-auto inline-flex max-w-full rounded-full bg-[#ebf8d8] px-5 py-2.5 text-[0.56rem] font-black uppercase tracking-[0.16em] text-[#111714] shadow-[0_1px_0_rgba(255,255,255,0.75)_inset] sm:px-7 sm:py-3 sm:text-xs sm:tracking-[0.28em]">
-            Tu plataforma de reservas en minutos
+            Sitios web con calendario de reservas
           </p>
           <h1 className="mx-auto mt-7 max-w-[68rem] text-[clamp(3rem,6.4vw,6.8rem)] font-black leading-[0.94] tracking-[-0.045em] text-[#05090a]">
             Tu web,
@@ -101,13 +101,13 @@ export default function BenefitsSection() {
           </h1>
           <p className="mx-auto mt-6 max-w-[47rem] text-lg font-medium leading-8 text-[#626b70] sm:text-2xl sm:leading-9">
             Crea tu página web con calendario de reservas, compártela con tus
-            clientes y gestiona citas automáticamente.
+            clientes y gestiona tus citas diarias.
           </p>
           <Link
             href="/acceso"
             className="mt-8 inline-flex h-14 w-full max-w-[18.5rem] items-center justify-center gap-4 rounded-[0.6rem] bg-[#39ad12] px-6 text-base font-bold text-white shadow-[0_18px_34px_rgba(44,160,17,0.18)] transition hover:bg-[#2f9810] focus:outline-none focus:ring-4 focus:ring-[#cdecbb] sm:w-auto sm:min-w-[18.5rem] sm:text-lg"
           >
-            Crear mi pagina
+            Comenzar ahora
             <FontAwesomeIcon icon={faUserPlus} className="size-4" />
           </Link>
         </div>
