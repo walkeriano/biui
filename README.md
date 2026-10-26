@@ -96,6 +96,8 @@ npm audit --omit=dev
 
 `npm run check` ejecuta lint, pruebas de lógica/API con Supabase simulado y compilación. El pipeline de CI ejecuta esas comprobaciones y audita las dependencias de producción.
 
+Para el menú del landing comercial, consulta la [corrección y verificación de navegación](docs/landing-navigation-verification.md), que incluye una prueba reproducible de navegador contra la compilación local de producción.
+
 Consulta [la revisión de producción](docs/production-review.md) para los hallazgos corregidos, los límites de estas pruebas y los pendientes de Supabase, recuperación de contraseña y gestión de reservas. La revisión no aprueba todavía el despliegue a producción.
 
 Tras reactivar Supabase se ejecutaron pruebas de navegador contra el backend real. Consulta [la verificación de conexión, caché, imágenes y publicación](docs/supabase-verification.md). Hay una corrección remota pendiente en `supabase/production-hardening.sql` para bloquear inserts anónimos de reservas, limitar Storage y establecer borradores por defecto.

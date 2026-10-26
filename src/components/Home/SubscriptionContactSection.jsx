@@ -35,8 +35,7 @@ const supportFeatures = [
 
 export default function SubscriptionContactSection() {
   return (
-    <section className="relative overflow-hidden bg-white px-4 py-20 text-[#05090a] sm:px-6 lg:px-8 lg:py-24">
-      <span id="suscripcion" className="absolute -top-24" />
+    <section id="suscripcion" className="relative scroll-mt-32 overflow-clip bg-white px-4 py-20 text-[#05090a] sm:px-6 lg:px-8 lg:py-24">
       <Image
         src="/bg-oficial.png"
         alt=""
@@ -111,7 +110,7 @@ export default function SubscriptionContactSection() {
 
         <div
           id="atencion"
-          className="relative mt-16 overflow-hidden rounded-[1.65rem] bg-[#003b2d] px-6 py-8 text-white shadow-[0_28px_70px_rgba(0,38,30,0.18)] sm:px-10 lg:mt-20 lg:px-14 lg:py-12"
+          className="relative mt-16 scroll-mt-32 overflow-clip rounded-[1.65rem] bg-[#003b2d] px-6 py-8 text-white shadow-[0_28px_70px_rgba(0,38,30,0.18)] sm:px-10 lg:mt-20 lg:px-14 lg:py-12"
         >
           <Image
             src="/bg-oficial.png"

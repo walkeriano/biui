@@ -81,8 +81,8 @@ const benefits = [
 export default function BenefitsSection() {
   return (
     <section
-      id="beneficios"
-      className="relative overflow-hidden bg-white px-4 pb-20 pt-16 text-foreground sm:px-6 lg:px-8 lg:pb-24 lg:pt-20"
+      id="inicio"
+      className="relative scroll-mt-32 overflow-clip bg-white px-4 pb-20 pt-16 text-foreground sm:px-6 lg:px-8 lg:pb-24 lg:pt-20"
     >
       <div className="pointer-events-none absolute left-[-18rem] top-[-16rem] size-[44rem] rounded-full bg-[radial-gradient(circle,rgba(208,244,157,0.44)_0%,rgba(238,250,219,0.3)_42%,transparent_70%)]" />
       <div className="pointer-events-none absolute right-[-18rem] top-[16rem] size-[46rem] rounded-full bg-[radial-gradient(circle,rgba(210,246,172,0.35)_0%,rgba(244,251,238,0.28)_46%,transparent_72%)]" />
@@ -141,7 +141,7 @@ export default function BenefitsSection() {
           ))}
         </div>
 
-        <div className="mx-auto mt-20 grid max-w-[86rem] gap-4 md:grid-cols-2 lg:mt-28 xl:grid-cols-3">
+        <div id="beneficios" className="mx-auto mt-20 scroll-mt-32 grid max-w-[86rem] gap-4 md:grid-cols-2 lg:mt-28 xl:grid-cols-3">
           {benefits.map((benefit) => (
             <article
               key={benefit.title}

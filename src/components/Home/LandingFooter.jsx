@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@/lib/fontawesome";
 
 const footerLinks = [
-  { label: "Inicio", href: "/" },
+  { label: "Inicio", href: "#inicio" },
   { label: "Beneficios", href: "#beneficios" },
   { label: "Suscripción", href: "#suscripcion" },
   { label: "Atención al cliente", href: "#atencion" },
@@ -33,13 +33,13 @@ export default function LandingFooter() {
         <div className="flex flex-col gap-6 lg:items-end">
           <nav className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-bold text-[#69707d]">
             {footerLinks.map((link) => (
-              <Link
+              <a
                 key={link.href}
                 href={link.href}
                 className="transition hover:text-[#26910f]"
               >
                 {link.label}
-              </Link>
+              </a>
             ))}
           </nav>
           <Link

@@ -1,11 +1,8 @@
 import Image from "next/image";
+import Link from "next/link";
 import AuthPanel from "@/components/auth/AuthPanel/AuthPanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCalendarDays,
-  faCheck,
-  faShieldHalved,
-} from "@/lib/fontawesome";
+import { faArrowRight } from "@/lib/fontawesome";
 
 export const metadata = {
   title: "Acceso | BIUI",
@@ -14,20 +11,28 @@ export const metadata = {
 
 export default function AccesoPage() {
   return (
-    <main className="min-h-dvh bg-[radial-gradient(circle_at_20%_12%,var(--accent-soft),transparent_22rem),linear-gradient(135deg,#ffffff_0%,var(--background)_50%,#eef6f2_100%)] px-4 py-8 text-foreground sm:px-6 lg:px-8">
-      <section className="mx-auto grid min-h-[calc(100dvh-4rem)] w-full max-w-[var(--container-page)] items-center gap-10 lg:grid-cols-[0.92fr_1fr]">
+    <main className="min-h-dvh bg-[radial-gradient(circle_at_20%_12%,var(--accent-soft),transparent_22rem),linear-gradient(135deg,#ffffff_0%,var(--background)_50%,#eef6f2_100%)] px-4 pb-8 pt-4 text-foreground sm:px-6 sm:pt-6 lg:px-8">
+      <header className="mx-auto flex w-full max-w-[86rem] items-center justify-between gap-3 rounded-[1.15rem] border border-white/70 bg-white/90 px-4 py-3 shadow-[0_12px_40px_rgba(8,31,24,0.08)] backdrop-blur sm:gap-6 sm:px-8">
+        <Link href="/" aria-label="BIUI inicio" className="shrink-0">
+          <Image
+            src="/logo-biui.jpg"
+            alt="BIUI"
+            width={981}
+            height={554}
+            priority
+            className="h-10 w-auto object-contain mix-blend-multiply sm:h-12"
+          />
+        </Link>
+        <Link
+          href="/"
+          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[0.55rem] bg-[#00261e] px-3 text-sm font-bold text-white shadow-[0_14px_30px_rgba(0,31,24,0.16)] transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-soft sm:gap-3 sm:px-4"
+        >
+          <FontAwesomeIcon icon={faArrowRight} aria-hidden="true" className="size-3.5 rotate-180" />
+          Volver al inicio
+        </Link>
+      </header>
+      <section className="mx-auto mt-10 grid min-h-[calc(100dvh-11rem)] w-full max-w-[var(--container-page)] items-center gap-10 lg:grid-cols-[0.92fr_1fr]">
         <div className="mx-auto max-w-xl text-center lg:mx-0 lg:text-left">
-          <div className="mb-8 flex justify-center lg:justify-start">
-            <Image
-              src="/logo-biui.jpg"
-              alt="BIUI"
-              width={981}
-              height={554}
-              priority
-              className="h-16 w-auto object-contain"
-            />
-          </div>
-
           <p className="inline-flex rounded-full bg-accent-soft px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-primary">
             Tu pagina profesional
           </p>
@@ -38,35 +43,6 @@ export default function AccesoPage() {
             Crea una landing personalizada, ajusta tus servicios, define tus
             horarios y comparte una pagina lista para convertir visitas en citas.
           </p>
-          <div className="mt-8 hidden rounded-card border border-line bg-surface-elevated p-5 text-left shadow-card backdrop-blur lg:block">
-            <div className="flex items-start gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
-                <FontAwesomeIcon icon={faCalendarDays} className="size-4" />
-              </span>
-              <div>
-                <p className="text-sm font-bold text-foreground">
-                  De idea a pagina publicada
-                </p>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  Disena tu perfil, publica cambios y abre tu pagina final en
-                  segundos para comprobar la experiencia de tus clientes.
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 grid gap-2 text-sm font-semibold text-muted-foreground">
-              <p className="flex items-center gap-2">
-                <FontAwesomeIcon icon={faCheck} className="size-3 text-accent" />
-                Plantilla editable con colores, imagenes y servicios
-              </p>
-              <p className="flex items-center gap-2">
-                <FontAwesomeIcon
-                  icon={faShieldHalved}
-                  className="size-3 text-accent"
-                />
-                Reservas protegidas y panel privado para profesionales
-              </p>
-            </div>
-          </div>
         </div>
 
         <AuthPanel />

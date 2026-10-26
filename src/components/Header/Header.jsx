@@ -1,19 +1,77 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRightToBracket, faUserPlus } from "@/lib/fontawesome";
+import { faBars, faRightToBracket, faUserPlus, faXmark } from "@/lib/fontawesome";
 
 const navigation = [
-  { label: "Inicio", href: "/", active: true },
+  { label: "Inicio", href: "#inicio" },
   { label: "Beneficios", href: "#beneficios" },
   { label: "Suscripción", href: "#suscripcion" },
   { label: "Atención al cliente", href: "#atencion" },
 ];
 
 export default function Header() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeHref, setActiveHref] = useState("#inicio");
+  const headerRef = useRef(null);
+  const toggleRef = useRef(null);
+
+  useEffect(() => {
+    function updateActiveSection() {
+      let current = "#inicio";
+      for (const item of navigation) {
+        const section = document.getElementById(item.href.slice(1));
+        if (section && section.getBoundingClientRect().top <= 160) {
+          current = item.href;
+        }
+      }
+      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
+        current = "#atencion";
+      }
+      setActiveHref(current);
+    }
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    function closeOnDesktop(event) {
+      if (event.matches) setIsOpen(false);
+    }
+    updateActiveSection();
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    window.addEventListener("resize", updateActiveSection);
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => {
+      window.removeEventListener("scroll", updateActiveSection);
+      window.removeEventListener("resize", updateActiveSection);
+      desktop.removeEventListener("change", closeOnDesktop);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    function dismiss(event) {
+      if (event.type === "keydown") {
+        if (event.key !== "Escape") return;
+        toggleRef.current?.focus();
+      } else if (headerRef.current?.contains(event.target)) {
+        return;
+      }
+      setIsOpen(false);
+    }
+    document.addEventListener("keydown", dismiss);
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("focusin", dismiss);
+    return () => {
+      document.removeEventListener("keydown", dismiss);
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("focusin", dismiss);
+    };
+  }, [isOpen]);
+
   return (
-    <header className="mx-auto flex w-full max-w-[86rem] items-center justify-between rounded-[1.15rem] border border-white/70 bg-white/90 px-4 py-3 shadow-[0_12px_40px_rgba(8,31,24,0.08)] backdrop-blur sm:gap-6 sm:px-8">
-      <Link href="/" aria-label="BIUI inicio" className="shrink-0">
+    <header ref={headerRef} className="relative mx-auto flex w-full max-w-[86rem] items-center justify-between rounded-[1.15rem] border border-white/70 bg-white/90 px-4 py-3 shadow-[0_12px_40px_rgba(8,31,24,0.08)] backdrop-blur sm:gap-6 sm:px-8">
+      <a href="#inicio" onClick={() => setIsOpen(false)} aria-label="BIUI inicio" className="shrink-0">
         <Image
           src="/logo-biui.jpg"
           alt="BIUI"
@@ -22,23 +80,42 @@ export default function Header() {
           priority
           className="h-10 w-auto object-contain mix-blend-multiply sm:h-12"
         />
-      </Link>
-      <nav className="hidden items-center gap-10 text-base font-medium text-[#0f1315] lg:flex">
+      </a>
+      <nav id="landing-navigation" aria-label="Navegación principal" className={`${isOpen ? "flex" : "hidden"} absolute inset-x-0 top-[calc(100%+0.5rem)] max-h-[calc(100dvh-7rem)] flex-col gap-2 overflow-y-auto rounded-[1.15rem] border border-white/70 bg-white p-4 shadow-[0_12px_40px_rgba(8,31,24,0.12)] lg:static lg:flex lg:max-h-none lg:flex-row lg:items-center lg:gap-8 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none text-sm font-medium text-[#0f1315]`}>
         {navigation.map((item) => (
-          <Link
+          <a
             key={item.href}
             href={item.href}
+            aria-current={activeHref === item.href ? "location" : undefined}
+            onClick={() => {
+              setIsOpen(false);
+              if (toggleRef.current?.offsetParent) toggleRef.current.focus();
+            }}
             className={
-              item.active
-                ? "relative py-2 font-bold text-sm text-[#34ad12] after:absolute after:-bottom-3 after:left-1/2 after:h-1 after:w-9 after:-translate-x-1/2 after:rounded-full after:bg-[#34ad12]"
-                : "py-2 transition text-sm hover:text-accent"
+              activeHref === item.href
+                ? "rounded px-3 py-3 font-bold text-[#34ad12] lg:px-0 lg:py-2 lg:underline lg:decoration-4 lg:underline-offset-[1rem] focus-visible:outline-2 focus-visible:outline-accent"
+                : "rounded px-3 py-3 transition hover:text-accent lg:px-0 lg:py-2 focus-visible:outline-2 focus-visible:outline-accent"
             }
           >
             {item.label}
-          </Link>
+          </a>
         ))}
+        <Link href="/acceso" className="rounded px-3 py-3 font-bold text-primary focus-visible:outline-2 focus-visible:outline-accent sm:hidden">
+          Iniciar sesión
+        </Link>
       </nav>
       <div className="flex items-center gap-3">
+        <button
+          ref={toggleRef}
+          type="button"
+          aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-expanded={isOpen}
+          aria-controls="landing-navigation"
+          onClick={() => setIsOpen((open) => !open)}
+          className="inline-flex size-11 items-center justify-center rounded-lg text-primary hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-accent lg:hidden"
+        >
+          <FontAwesomeIcon icon={isOpen ? faXmark : faBars} className="size-5" />
+        </button>
         <Link
           href="/acceso"
           className="hidden items-center gap-3 text-base font-bold text-[#0d1214] transition hover:text-accent text-sm sm:inline-flex"
