@@ -8,6 +8,7 @@ import { buildTimeSlots } from "@/lib/availability";
 import { sanitizeSlug } from "@/lib/slug";
 import { normalizeExternalUrl } from "../urls.js";
 import { serviceDurationMinutes } from "../appointmentIntervals.js";
+import { normalizeBusinessName } from "./metadata.js";
 
 export const defaultProfessional = {
   name: "Profesional",
@@ -25,6 +26,7 @@ const defaultTheme = {
 };
 
 const defaultHero = {
+  businessName: "",
   label: "",
   title: "",
   text: "",
@@ -78,6 +80,7 @@ export function editorStateToPagePayload({
       buttonStyle: data.buttonStyle,
     },
     hero: {
+      businessName: normalizeBusinessName(data.businessName),
       label: data.heroLabel,
       title: data.heroTitle,
       text: data.heroText,
@@ -134,6 +137,7 @@ export function pagePayloadToEditorState(page) {
       titleFont: page.theme?.titleFont ?? defaultPageData.titleFont,
       textFont: page.theme?.textFont ?? defaultPageData.textFont,
       buttonStyle: page.theme?.buttonStyle ?? defaultPageData.buttonStyle,
+      businessName: normalizeBusinessName(page.hero?.businessName),
       heroLabel: page.hero?.label ?? defaultPageData.heroLabel,
       heroTitle: page.hero?.title ?? defaultPageData.heroTitle,
       heroText: page.hero?.text ?? defaultPageData.heroText,
@@ -178,6 +182,7 @@ export function databaseRowToPublicPage(row) {
     hero: {
       ...defaultHero,
       ...(row.hero ?? {}),
+      businessName: normalizeBusinessName(row.hero?.businessName),
       image: sanitizeStoredImageUrl(row.hero?.image),
     },
     about: {

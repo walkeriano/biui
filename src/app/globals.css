@@ -9,26 +9,20 @@
   --surface-elevated: rgba(255, 255, 255, 0.9);
 
   --muted: #65746f;
-  --muted-foreground: #34433e;
   --line: #dfe9e6;
 
   --primary: #001f18;
-  --primary-foreground: #ffffff;
   --primary-hover: #00352a;
   --primary-soft: #e7f8d9;
 
   --accent: #54ad18;
-  --accent-foreground: #ffffff;
   --accent-hover: #469512;
   --accent-soft: #eefadb;
 
   --success: #2fa020;
-  --success-foreground: #ffffff;
-  --success-hover: #258219;
   --success-soft: #e7f8d9;
 
   --danger: #dc2626;
-  --danger-foreground: #ffffff;
   --danger-soft: #fee2e2;
 
   --radius-sm: 0.375rem;
@@ -39,7 +33,6 @@
   --shadow-soft: 0 22px 60px rgb(0 31 24 / 0.1);
 
   --container-page: 72rem;
-  --focus-ring: 0 0 0 4px rgb(186 230 253 / 0.75);
 }
 
 @theme inline {
@@ -51,26 +44,20 @@
   --color-surface-elevated: var(--surface-elevated);
 
   --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
   --color-line: var(--line);
 
   --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
 
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
 
   --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-success-hover: var(--success-hover);
   --color-success-soft: var(--success-soft);
 
   --color-danger: var(--danger);
-  --color-danger-foreground: var(--danger-foreground);
   --color-danger-soft: var(--danger-soft);
 
   --radius-sm: var(--radius-sm);
@@ -82,10 +69,6 @@
 
   --font-sans: Arial, Helvetica, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-}
-
-* {
-  box-sizing: border-box;
 }
 
 html {
@@ -107,13 +90,6 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
-
 .page-editor-content {
   color-scheme: dark;
   --foreground: #f5f5f5;
@@ -126,10 +102,6 @@ select {
   --success-soft: #142a1b;
   --danger: #f87171;
   --danger-soft: #351717;
-}
-
-a {
-  text-decoration: none;
 }
 
 ::selection {

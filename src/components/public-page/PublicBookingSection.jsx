@@ -243,7 +243,7 @@ export default function PublicBookingSection({ page, previewMode = false }) {
               fontFamily: page.theme.titleFont,
             }}
           >
-            Da el primer paso hoy
+            Reservar cita ahora
           </h2>
           <p className="mt-4 text-base leading-7 text-muted">
             Elige el servicio, la fecha y la hora que mejor se adapte a ti.

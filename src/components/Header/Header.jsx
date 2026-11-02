@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faRightToBracket, faUserPlus, faXmark } from "@/lib/fontawesome";
+import { useAuth } from "@/context/AuthContext";
 
 const navigation = [
   { label: "Inicio", href: "#inicio" },
@@ -14,6 +15,13 @@ const navigation = [
 ];
 
 export default function Header() {
+  const { user, isLoading } = useAuth();
+  const displayName = [
+    user?.user_metadata?.full_name,
+    user?.user_metadata?.name,
+    user?.email?.split("@")[0],
+  ].find((value) => typeof value === "string" && value.trim())?.trim() || "Mi cuenta";
+  const initials = displayName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
   const [isOpen, setIsOpen] = useState(false);
   const [activeHref, setActiveHref] = useState("#inicio");
   const headerRef = useRef(null);
@@ -100,9 +108,11 @@ export default function Header() {
             {item.label}
           </a>
         ))}
-        <Link href="/acceso" className="rounded px-3 py-3 font-bold text-primary focus-visible:outline-2 focus-visible:outline-accent sm:hidden">
-          Iniciar sesión
-        </Link>
+        {!isLoading && !user ? (
+          <Link href="/acceso" onClick={() => setIsOpen(false)} className="rounded px-3 py-3 font-bold text-primary focus-visible:outline-2 focus-visible:outline-accent sm:hidden">
+            Iniciar sesión
+          </Link>
+        ) : null}
       </nav>
       <div className="flex items-center gap-3">
         <button
@@ -116,21 +126,44 @@ export default function Header() {
         >
           <FontAwesomeIcon icon={isOpen ? faXmark : faBars} className="size-5" />
         </button>
-        <Link
-          href="/acceso"
-          className="hidden items-center gap-3 text-base font-bold text-[#0d1214] transition hover:text-accent text-sm sm:inline-flex"
-        >
-          <FontAwesomeIcon icon={faRightToBracket} className="size-3.5" />
-          Iniciar sesión
-        </Link>
-        <Link
-          href="/acceso"
-          aria-label="Crear cuenta"
-          className="inline-flex size-10 items-center justify-center gap-2 whitespace-nowrap rounded-[0.55rem] bg-[#00261e] text-sm font-bold text-white shadow-[0_14px_30px_rgba(0,31,24,0.16)] transition hover:bg-primary-hover focus:outline-none focus:ring-4 focus:ring-primary-soft sm:h-11 sm:w-auto sm:px-4"
-        >
-          <span className="hidden sm:inline">Crear cuenta</span>
-          <FontAwesomeIcon icon={faUserPlus} className="size-3.7" />
-        </Link>
+        {isLoading ? (
+          <div role="status" className="h-11 w-32 animate-pulse rounded-[0.55rem] bg-primary-soft sm:w-44">
+            <span className="sr-only">Comprobando sesión</span>
+          </div>
+        ) : user ? (
+          <Link
+            href="/dashboard"
+            aria-label={`${displayName}, ir al perfil`}
+            onClick={() => setIsOpen(false)}
+            className="inline-flex h-11 min-w-0 max-w-36 items-center gap-2 rounded-[0.55rem] bg-[#00261e] px-3 text-white shadow-[0_14px_30px_rgba(0,31,24,0.16)] transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-soft sm:max-w-52 sm:gap-3 sm:px-4"
+          >
+            <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-full bg-white/15 text-xs font-bold text-white">
+              {initials}
+            </span>
+            <span className="min-w-0 text-left">
+              <span className="block truncate text-sm font-bold">{displayName}</span>
+              <span className="block text-[0.65rem] text-white/75">Ir al perfil</span>
+            </span>
+          </Link>
+        ) : (
+          <>
+            <Link
+              href="/acceso"
+              className="hidden items-center gap-3 text-sm font-bold text-[#0d1214] transition hover:text-accent sm:inline-flex"
+            >
+              <FontAwesomeIcon icon={faRightToBracket} className="size-3.5" />
+              Iniciar sesión
+            </Link>
+            <Link
+              href="/acceso"
+              aria-label="Crear cuenta"
+              className="inline-flex size-10 items-center justify-center gap-2 whitespace-nowrap rounded-[0.55rem] bg-[#00261e] text-sm font-bold text-white shadow-[0_14px_30px_rgba(0,31,24,0.16)] transition hover:bg-primary-hover focus:outline-none focus:ring-4 focus:ring-primary-soft sm:h-11 sm:w-auto sm:px-4"
+            >
+              <span className="hidden sm:inline">Crear cuenta</span>
+              <FontAwesomeIcon icon={faUserPlus} className="size-3.7" />
+            </Link>
+          </>
+        )}
       </div>
     </header>
   );

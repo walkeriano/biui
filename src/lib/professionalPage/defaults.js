@@ -5,6 +5,7 @@ export const defaultPageData = {
   titleFont: "Playfair Display",
   textFont: "Inter",
   buttonStyle: "rounded",
+  businessName: "",
   heroLabel: "",
   heroTitle: "",
   heroText: "",
@@ -55,18 +56,6 @@ export const emptyService = {
 };
 
 export const initialServices = [{ ...emptyService }];
-
-export const publicFallbackServices = [
-  {
-    id: 1,
-    name: "Terapia individual",
-    duration: "50 minutos",
-    price: "60",
-    image: "",
-    description:
-      "Un espacio para ti. Trabajaremos tus emociones, autoestima y objetivos personales.",
-  },
-];
 
 export const defaultAvailableDays = ["Lun", "Mar", "Mie", "Jue", "Vie"];
 

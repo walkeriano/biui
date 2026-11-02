@@ -1,20 +1,17 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { compressImageFile, maxInputSize } from "@/lib/imageCompression";
+import { compressImageFile } from "@/lib/imageCompression";
 
 export default function useImageCompressor() {
   const [isCompressing, setIsCompressing] = useState(false);
   const [compressionError, setCompressionError] = useState("");
-  const [compressionStats, setCompressionStats] = useState(null);
 
   const compressImage = useCallback(async (file) => {
     setCompressionError("");
-    setCompressionStats(null);
     setIsCompressing(true);
     try {
       const result = await compressImageFile(file);
-      setCompressionStats(result.stats);
       return { error: null, file: result.file };
     } catch (error) {
       setCompressionError(error.message);
@@ -24,5 +21,5 @@ export default function useImageCompressor() {
     }
   }, []);
 
-  return { compressImage, compressionError, compressionStats, isCompressing, maxInputSize };
+  return { compressImage, compressionError, isCompressing };
 }

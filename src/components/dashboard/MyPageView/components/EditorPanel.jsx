@@ -14,7 +14,7 @@ import PublicLinkSection from "@/components/dashboard/MyPageView/components/Publ
 const sections = [
   { id: "link", label: "Enlace público", icon: faLink, Component: PublicLinkSection },
   { id: "appearance", label: "Apariencia", icon: faPalette, Component: AppearanceSection },
-  { id: "hero", label: "Portada", icon: faImage, Component: HeroSection },
+  { id: "hero", label: "Home bienvenida", icon: faImage, Component: HeroSection },
   { id: "about", label: "Sobre mí", icon: faUser, Component: AboutSection },
   { id: "services", label: "Servicios", icon: faBriefcase, Component: ServicesSection },
   { id: "location", label: "Ubicación", icon: faLocationDot, Component: LocationSection },

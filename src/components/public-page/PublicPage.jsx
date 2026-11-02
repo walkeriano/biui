@@ -13,8 +13,8 @@ export default function PublicPage({ page, previewMode = false }) {
     >
       <PublicHeader page={page} previewMode={previewMode} />
       <PublicHero page={page} previewMode={previewMode} />
-      <PublicServices page={page} />
       <PublicAbout page={page} />
+      <PublicServices page={page} />
       <PublicBookingSection page={page} previewMode={previewMode} />
       <PublicContact page={page} />
     </main>

@@ -57,6 +57,7 @@ export default function PreviewPage({
         socialYoutube: data.socialYoutube,
       },
       hero: {
+        businessName: data.businessName,
         image: heroImage,
         label: data.heroLabel,
         text: data.heroText,

@@ -22,12 +22,24 @@ export default function HeroSection({
         icon={faImage}
         isOpen={isOpen}
         onToggle={onToggle}
-        title="Portada (Hero)"
-        description="Imagen principal y texto de presentacion."
+        title="Home bienvenida"
+        description="Nombre comercial, imagen principal y texto de presentación."
       />
 
       {isOpen ? (
         <div className="page-editor-content bg-black p-4 grid gap-5">
+          <Field label="Nombre comercial" counter={`${(data.businessName ?? "").length}/80`}>
+            <input
+              value={data.businessName ?? ""}
+              maxLength={80}
+              placeholder="Tu marca o tu nombre"
+              onChange={(event) => updateData("businessName", event.target.value)}
+              className={inputClassName}
+            />
+          </Field>
+          <p className="text-xs leading-5 text-white/72">
+            Se mostrará en la pestaña del navegador al publicar. Si lo dejas vacío, se usará el nombre del profesional.
+          </p>
           <ImagePicker
             label="Imagen de portada"
             image={heroImage}

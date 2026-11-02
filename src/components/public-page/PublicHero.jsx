@@ -12,11 +12,9 @@ export default function PublicHero({ page, previewMode = false }) {
   const heroBackground = `linear-gradient(135deg, color-mix(in srgb, ${page.theme.primaryColor} 10%, white) 0%, color-mix(in srgb, ${page.theme.secondaryColor} 16%, white) 52%, color-mix(in srgb, ${page.theme.primaryColor} 16%, ${page.theme.secondaryColor}) 100%)`;
   const imageFallbackBackground = `linear-gradient(145deg, color-mix(in srgb, ${page.theme.primaryColor} 68%, black) 0%, color-mix(in srgb, ${page.theme.secondaryColor} 76%, white) 100%)`;
   const sectionClassName = previewMode
-    ? "relative overflow-hidden pt-24 lg:h-[46rem] lg:pt-0"
-    : "relative overflow-hidden pt-24 lg:h-[100svh] lg:min-h-[46rem] lg:pt-0";
-  const contentClassName = previewMode
-    ? "relative mx-auto px-4 py-14 sm:px-6 lg:absolute lg:inset-0 lg:flex lg:max-w-none lg:items-center lg:px-0 lg:py-0"
-    : "relative mx-auto px-4 py-14 sm:px-6 lg:absolute lg:inset-0 lg:flex lg:max-w-none lg:items-center lg:px-0 lg:py-0";
+    ? "relative overflow-hidden lg:h-[46rem]"
+    : "relative overflow-hidden lg:h-[100svh] lg:min-h-[46rem]";
+  const contentClassName = "relative mx-auto px-4 py-14 sm:px-6 lg:absolute lg:inset-0 lg:flex lg:max-w-none lg:items-center lg:px-0 lg:py-0";
 
   return (
     <section
@@ -99,7 +97,7 @@ export default function PublicHero({ page, previewMode = false }) {
               className={`mt-8 inline-flex h-14 items-center justify-center gap-4 px-8 text-sm font-bold shadow-card ${getButtonClassName(page.theme.buttonStyle, { pill: true })}`}
               style={getButtonStyle(page)}
             >
-              Reservar mi primera cita
+              Reservar cita
               <FontAwesomeIcon icon={faArrowRight} className="size-3.5" />
             </a>
           </div>

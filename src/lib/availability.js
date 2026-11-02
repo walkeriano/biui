@@ -79,17 +79,6 @@ export function buildCurrentMonth(availableDays, { monthOffset = 0, now = new Da
   };
 }
 
-export function formatSelectedDay(dayNumber) {
-  const today = new Date();
-  const date = new Date(today.getFullYear(), today.getMonth(), dayNumber);
-
-  return new Intl.DateTimeFormat("es", {
-    day: "numeric",
-    month: "long",
-    weekday: "long",
-  }).format(date);
-}
-
 function timeToMinutes(time) {
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(time))) return null;
   const [hours, minutes] = String(time).split(":").map(Number);

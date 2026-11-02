@@ -1,0 +1,70 @@
+[
+  {
+    "name": "Remote bucket limits and public visibility",
+    "detail": true
+  },
+  {
+    "name": "Authenticated png upload and anonymous public download",
+    "detail": true
+  },
+  {
+    "name": "Existing client upsert remains compatible",
+    "detail": true
+  },
+  {
+    "name": "Exactly 5 MiB is accepted (PNG padded for size test)",
+    "detail": true
+  },
+  {
+    "name": "5 MiB plus one byte rejected",
+    "detail": {
+      "status": "413"
+    }
+  },
+  {
+    "name": "Authenticated jpeg upload and anonymous public download",
+    "detail": true
+  },
+  {
+    "name": "Authenticated webp upload and anonymous public download",
+    "detail": true
+  },
+  {
+    "name": "Authenticated gif upload and anonymous public download",
+    "detail": true
+  },
+  {
+    "name": "Authenticated avif upload and anonymous public download",
+    "detail": true
+  },
+  {
+    "name": "svg rejected",
+    "detail": {
+      "status": "415"
+    }
+  },
+  {
+    "name": "html rejected",
+    "detail": {
+      "status": "415"
+    }
+  },
+  {
+    "name": "pdf rejected",
+    "detail": {
+      "status": "415"
+    }
+  },
+  {
+    "name": "Anonymous upload rejected",
+    "detail": true
+  },
+  {
+    "name": "Cross-owner upload rejected",
+    "detail": true
+  },
+  {
+    "name": "Temporary objects and account removed",
+    "detail": true
+  }
+]

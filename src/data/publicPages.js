@@ -68,7 +68,3 @@ export const publicPages = [
 export function getPublicPageBySlug(slug) {
   return publicPages.find((page) => page.slug === slug);
 }
-
-export function getPublicPageSlugs() {
-  return publicPages.map((page) => ({ slug: page.slug }));
-}

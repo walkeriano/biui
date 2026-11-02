@@ -1,11 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight, faQuoteLeft } from "@/lib/fontawesome";
+import { faArrowRight } from "@/lib/fontawesome";
 import { getButtonClassName, getButtonStyle } from "@/components/public-page/theme";
 
 export default function PublicAbout({ page }) {
   return (
     <section id="sobre-mi" className="bg-[#fffdf8] px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[28rem_minmax(0,1fr)_13rem] lg:items-center">
+      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] lg:items-center">
         <div
           className="min-h-[18rem] overflow-hidden rounded-card shadow-card lg:min-h-[19rem]"
           style={{
@@ -56,32 +56,11 @@ export default function PublicAbout({ page }) {
             className={`mt-8 inline-flex h-12 items-center justify-center gap-3 px-7 text-sm font-bold shadow-card ${getButtonClassName(page.theme.buttonStyle)}`}
             style={getButtonStyle(page)}
           >
-            Conocer mas sobre mi
+            Reservar cita
             <FontAwesomeIcon icon={faArrowRight} className="size-3.5" />
           </a>
         </div>
 
-        <aside
-          className="rounded-card p-6 shadow-card"
-          style={{
-            backgroundColor: `color-mix(in srgb, ${page.theme.secondaryColor} 10%, white)`,
-          }}
-        >
-          <FontAwesomeIcon
-            icon={faQuoteLeft}
-            className="size-7"
-            style={{ color: page.theme.secondaryColor }}
-          />
-          <p
-            className="mt-4 text-lg font-bold leading-8"
-            style={{
-              color: page.theme.primaryColor,
-              fontFamily: page.theme.titleFont,
-            }}
-          >
-            Cada proceso es unico, y por eso cada paso tambien lo es.
-          </p>
-        </aside>
       </div>
     </section>
   );

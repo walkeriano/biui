@@ -51,6 +51,8 @@ El esquema también establece las páginas nuevas como borradores y valida nuevo
 
 Si solo necesitas reparar o recrear politicas de Storage, ejecuta `supabase/storage-policies.sql`.
 
+Los límites del bucket `profesional-assets` se aplicaron en Supabase el 2 de noviembre de 2026: máximo de 5 MiB por archivo y tipos JPG, PNG, WebP, GIF y AVIF. Consulta la [verificación de Storage](docs/storage-hardening-verification.md). Para aplicar únicamente estos límites en otro entorno existente, usa `supabase/storage-hardening.sql`; conserva archivos, visibilidad y políticas. También se puede inspeccionar con `node --env-file=.env.local scripts/harden-storage.mjs` y aplicar con `--apply`, usando la credencial administrativa solo en servidor.
+
 ## Modelo De Seguridad
 
 Las paginas profesionales publicadas son legibles publicamente. Cada profesional puede crear, editar y borrar solamente su propia pagina.
@@ -102,4 +104,4 @@ Para el menú del landing comercial, consulta la [corrección y verificación de
 
 Consulta [la revisión de producción](docs/production-review.md) para los hallazgos corregidos, los límites de estas pruebas y los pendientes de Supabase, recuperación de contraseña y gestión de reservas. La revisión no aprueba todavía el despliegue a producción.
 
-Tras reactivar Supabase se ejecutaron pruebas de navegador contra el backend real. Consulta [la verificación de conexión, caché, imágenes y publicación](docs/supabase-verification.md). Hay una corrección remota pendiente en `supabase/production-hardening.sql` para bloquear inserts anónimos de reservas, limitar Storage y establecer borradores por defecto.
+Tras reactivar Supabase se ejecutaron pruebas de navegador contra el backend real. Consulta [la verificación de conexión, caché, imágenes y publicación](docs/supabase-verification.md). Los límites de Storage ya se aplicaron por separado. La corrección remota de `supabase/production-hardening.sql` para bloquear inserts anónimos de reservas y establecer borradores por defecto sigue pendiente de verificación y aplicación; el cambio de Storage no modificó esos permisos ni valores iniciales.

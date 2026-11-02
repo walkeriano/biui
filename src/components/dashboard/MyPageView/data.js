@@ -1,24 +1,4 @@
-export { defaultPageData, publicPageFallbackData, emptyService, initialServices, publicFallbackServices, defaultAvailableDays } from "@/lib/professionalPage/defaults";
-
-export const colorOptions = [
-  "#16a34a",
-  "#9adf62",
-  "#c7e95f",
-  "#fed7aa",
-  "#fca5a5",
-  "#c4b5fd",
-  "#bfdbfe",
-];
-
-export const secondaryColorOptions = [
-  "#004236",
-  "#8fa3a0",
-  "#e2e8f0",
-  "#f7ede2",
-  "#fecaca",
-  "#e9d5ff",
-  "#dbeafe",
-];
+export { defaultPageData, publicPageFallbackData, emptyService, initialServices, defaultAvailableDays } from "@/lib/professionalPage/defaults";
 
 export const weekDays = ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"];
 

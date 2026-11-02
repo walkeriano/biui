@@ -46,8 +46,8 @@ export default function PublicHeader({ page, previewMode = false }) {
     <header
       className={
         previewMode
-          ? "absolute inset-x-0 top-0 z-40 border-b border-white/35 bg-white/72 backdrop-blur-xl"
-          : "fixed inset-x-0 top-0 z-40 border-b border-white/35 bg-white/72 backdrop-blur-xl"
+          ? "relative inset-x-0 top-0 z-40 border-b border-white/35 bg-white/72 backdrop-blur-xl lg:absolute"
+          : "sticky inset-x-0 top-0 z-40 border-b border-white/35 bg-white/72 backdrop-blur-xl lg:fixed"
       }
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">

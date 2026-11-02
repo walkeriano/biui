@@ -13,7 +13,6 @@ export default function useImageUpload() {
   const {
     compressImage,
     compressionError,
-    compressionStats,
     isCompressing,
   } = useImageCompressor();
 
@@ -71,7 +70,6 @@ export default function useImageUpload() {
 
   return {
     bucketName,
-    compressionStats,
     isCompressing,
     isUploading: isUploading || isCompressing,
     uploadError: uploadError || compressionError,
