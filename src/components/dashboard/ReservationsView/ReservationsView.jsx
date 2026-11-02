@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAuth } from "@/context/AuthContext";
 import RescheduleForm from "./RescheduleForm";
+import StatCard from "@/components/dashboard/widgets/StatCard";
 import { dateKeyInZone, dayRangeInZone, defaultTimeZone } from "@/lib/booking";
 import {
   getUserCacheKey,
@@ -123,23 +124,23 @@ export default function ReservationsView() {
         </p>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <SummaryCard
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+        <StatCard
           icon={faCalendarDays}
           label="Reservas de hoy"
-          tone="bg-success-soft text-success"
+          tone="green"
           value={isLoading ? "..." : String(summary.today)}
         />
-        <SummaryCard
+        <StatCard
           icon={faClock}
           label="Pendientes"
-          tone="bg-orange-50 text-orange-500"
+          tone="orange"
           value={isLoading ? "..." : String(summary.pending)}
         />
-        <SummaryCard
+        <StatCard
           icon={faUserGroup}
           label="Confirmadas"
-          tone="bg-blue-50 text-blue-600"
+          tone="blue"
           value={isLoading ? "..." : String(summary.confirmed)}
         />
       </div>
@@ -230,18 +231,6 @@ export default function ReservationsView() {
         )}
       </section>
     </div>
-  );
-}
-
-function SummaryCard({ icon, label, tone, value }) {
-  return (
-    <article className="rounded-card border border-line bg-surface p-4 shadow-card">
-      <span className={`grid size-10 place-items-center rounded-md ${tone}`}>
-        <FontAwesomeIcon icon={icon} className="size-4" />
-      </span>
-      <p className="mt-4 text-3xl font-bold text-foreground">{value}</p>
-      <p className="mt-1 text-sm text-muted">{label}</p>
-    </article>
   );
 }
 

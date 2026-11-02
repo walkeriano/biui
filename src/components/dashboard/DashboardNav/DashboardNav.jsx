@@ -10,7 +10,7 @@ import {
   faXmark,
 } from "@/lib/fontawesome";
 
-const navigation = [
+export const navigation = [
   { id: "home", label: "Inicio", description: "", icon: faHouse, enabled: true },
   {
     id: "page",
