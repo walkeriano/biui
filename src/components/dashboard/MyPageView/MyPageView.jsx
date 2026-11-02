@@ -1,12 +1,21 @@
 "use client";
 
+import { useEffect } from "react";
 import EditorPanel from "@/components/dashboard/MyPageView/components/EditorPanel";
 import PublishStatusModal from "@/components/dashboard/MyPageView/components/PublishStatusModal";
 import PreviewPanel from "@/components/dashboard/MyPageView/components/preview/PreviewPanel";
 import usePageEditor from "@/components/dashboard/MyPageView/hooks/usePageEditor";
 
-export default function MyPageView({ onViewChange }) {
+export default function MyPageView({ onViewChange, onDirtyChange }) {
   const editor = usePageEditor();
+  useEffect(() => {
+    const dirty = editor.hasChanges || editor.publishStatus.state === "publishing";
+    onDirtyChange?.(dirty);
+    if (!dirty) return;
+    const warn = (event) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [editor.hasChanges, editor.publishStatus.state, onDirtyChange]);
 
   return (
     <div className="grid gap-5">

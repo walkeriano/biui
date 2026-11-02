@@ -7,6 +7,7 @@ import {
 import { buildTimeSlots } from "@/lib/availability";
 import { sanitizeSlug } from "@/lib/slug";
 import { normalizeExternalUrl } from "../urls.js";
+import { serviceDurationMinutes } from "../appointmentIntervals.js";
 
 export const defaultProfessional = {
   name: "Profesional",
@@ -90,6 +91,7 @@ export function editorStateToPagePayload({
     },
     services: services.map((service) => ({
       ...service,
+      durationMinutes: serviceDurationMinutes(service),
       image: sanitizeStoredImageUrl(service.image),
     })),
     contact: {

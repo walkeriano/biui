@@ -25,7 +25,7 @@ export default function ServicesSection({
   updateService,
 }) {
   return (
-    <article className="rounded-card border border-line bg-surface p-4 shadow-card">
+    <article className="overflow-hidden rounded-card border border-black bg-black shadow-card">
       <SectionHeader
         icon={faBriefcase}
         isOpen={isOpen}
@@ -35,7 +35,7 @@ export default function ServicesSection({
       />
 
       {isOpen ? (
-        <div className="mt-4">
+        <div className="page-editor-content bg-black p-4">
           <div className="grid gap-3">
             {services.map((service) => (
               <div key={service.id} className="rounded-card border border-line p-3">

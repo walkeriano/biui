@@ -10,7 +10,7 @@ import { defaultPageData } from '../src/components/dashboard/MyPageView/data.js'
 const valid = {
   appointmentAt: new Date('2030-01-07T08:00:00Z'),
   availability: { days: ['Lun'], start: '09:00', end: '12:00', times: ['09:00', '10:00'], timeZone: 'Europe/Madrid' },
-  selectedTime: '09:00', serviceName: 'Consulta', services: [{ name: 'Consulta' }],
+  selectedTime: '09:00', serviceName: 'Consulta', services: [{ name: 'Consulta', duration: '60 minutos' }],
 };
 
 test('Booking dates use the professional timezone including winter/summer DST', () => {
@@ -79,7 +79,7 @@ test('Publishing serializes the real professional, normalized slug and the same 
     availableDays: ['Lun'],
     data: { ...defaultPageData, publicSlug: 'Mi Página', scheduleStart: '09:00', scheduleEnd: '11:00', heroImage: 'blob:local' },
     professional: { name: 'Ana Pérez', title: 'Profesional' },
-    services: [{ id: 1, name: 'Consulta', image: 'https://example.com/image.png' }],
+    services: [{ id: 1, name: 'Consulta', duration: '60 minutos', image: 'https://example.com/image.png' }],
   });
   assert.equal(payload.slug, 'mi-pagina');
   assert.equal(payload.professional.name, 'Ana Pérez');

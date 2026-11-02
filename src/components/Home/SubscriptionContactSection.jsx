@@ -13,9 +13,9 @@ const planFeatures = [
   "Página de reservas personalizada",
   "Reservas ilimitadas",
   "Gestión de servicios y horarios",
-  "Notificaciones automáticas",
-  "Soporte por email",
-  "Todas las funciones incluidas",
+  "Consulta de reservas en tu panel",
+  "Vista previa de tu página",
+  "Personalización de textos e imágenes",
 ];
 
 const supportFeatures = [
@@ -49,20 +49,18 @@ export default function SubscriptionContactSection() {
         <div className="grid items-center gap-10 lg:grid-cols-[1.04fr_0.96fr] lg:gap-14">
           <div className="max-w-[52rem]">
             <p className="inline-flex rounded-full bg-[#e7f8d9] px-7 py-3 text-xs font-black uppercase tracking-[0.36em] shadow-[0_18px_36px_rgba(67,174,18,0.12)]">
-              Suscripción
+              Tu página profesional
             </p>
             <h2 className="mt-7 text-[clamp(2.8rem,5vw,5.85rem)] font-black leading-[0.95]">
-              Un plan de lanzamiento
+              Tu presencia profesional
               <span className="block text-[#42ad18]">
-                para impulsar tu negocio.
+                con reservas online.
               </span>
             </h2>
             <p className="mt-7 max-w-[48rem] text-xl font-medium leading-8 text-[#636775] sm:text-2xl sm:leading-10">
-              Accede a todas las funcionalidades por solo{" "}
-              <strong className="font-black text-[#3b3d48]">
-                5 € el primer mes.
-              </strong>{" "}
-              Sin permanencia y cancela cuando quieras.
+              Personaliza tu página, publica tus servicios y comparte tu enlace
+              para recibir reservas. Consulta tus próximas citas y gestiona sus
+              estados desde el panel.
             </p>
           </div>
 
@@ -70,17 +68,13 @@ export default function SubscriptionContactSection() {
             <div className="grid gap-8 md:grid-cols-[0.95fr_1.05fr] md:items-center">
               <div className="text-center">
                 <p className="mx-auto inline-flex rounded-full bg-[#e7f8d9] px-7 py-3 text-xs font-black uppercase tracking-[0.34em]">
-                  Plan de lanzamiento
+                  Empieza con BIUI
                 </p>
-                <div className="mt-5 text-[clamp(5rem,11vw,8.25rem)] font-black leading-none">
-                  5 €
-                </div>
-                <p className="mt-2 text-2xl font-black leading-none">
-                  el primer mes
-                </p>
-                <p className="mt-2 text-base font-medium leading-6 text-[#70727c]">
-                  Luego 12 €/mes
-                  <span className="block">Sin permanencia</span>
+                <h3 className="mt-5 text-4xl font-black leading-tight">
+                  Tu web y tus reservas
+                </h3>
+                <p className="mt-4 text-base font-medium leading-6 text-[#70727c]">
+                  Crea tu cuenta, prepara tu página y publica cuando esté lista.
                 </p>
                 <Link
                   href="/acceso"

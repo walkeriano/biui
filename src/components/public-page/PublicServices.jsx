@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight, faClock, faHeart, faLotus, faUser } from "@/lib/fontawesome";
+import { faArrowRight, faHeart, faLotus, faUser } from "@/lib/fontawesome";
 
 export default function PublicServices({ page }) {
   return (
@@ -71,11 +71,7 @@ export default function PublicServices({ page }) {
                 <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">
                   {service.description}
                 </p>
-                <div className="mt-auto flex items-center justify-between pt-5 text-sm font-bold text-[#061923]">
-                  <span className="inline-flex items-center gap-2 text-muted">
-                    <FontAwesomeIcon icon={faClock} className="size-3.5" />
-                    {service.duration}
-                  </span>
+                <div className="mt-auto flex justify-end pt-5 text-lg font-bold text-[#061923]">
                   <span>{service.price} €</span>
                 </div>
               </div>

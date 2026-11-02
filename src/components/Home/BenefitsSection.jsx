@@ -72,7 +72,7 @@ const benefits = [
     title: "Personaliza tu página",
   },
   {
-    description: "Ten todas tus citas y notificaciones en un solo lugar.",
+    description: "Consulta tus citas y gestiona tus reservas en un solo lugar.",
     icon: faChartSimple,
     title: "Organiza tu día",
   },

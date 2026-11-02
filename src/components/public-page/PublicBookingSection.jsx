@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRight,
@@ -21,23 +21,21 @@ import { getButtonClassName, getButtonStyle } from "@/components/public-page/the
 
 import { appointmentIso, availableTimes, dateKeyInZone, getTimeZone, timeInZone } from "@/lib/booking";
 
+import { appointmentEnd, occupiedTimes, serviceDurationMinutes } from "@/lib/appointmentIntervals";
+
 const steps = ["Servicio", "Fecha", "Hora", "Tus datos"];
 
 export default function PublicBookingSection({ page, previewMode = false }) {
   const timeZone = getTimeZone(page.availability.timeZone);
   const [monthOffset, setMonthOffset] = useState(0);
   const todayKey = dateKeyInZone(new Date(), timeZone);
-  const availability = useMemo(
-    () =>
-      buildAvailability({
-        days: page.availability.days,
-        end: page.availability.end,
-        start: page.availability.start,
-        monthOffset,
-        now: new Date(`${todayKey}T00:00:00Z`),
-      }),
-    [page.availability.days, page.availability.end, page.availability.start, monthOffset, todayKey],
-  );
+  const availability = buildAvailability({
+    days: page.availability.days,
+    end: page.availability.end,
+    start: page.availability.start,
+    monthOffset,
+    now: new Date(`${todayKey}T00:00:00Z`),
+  });
   const [hasSelectedService, setHasSelectedService] = useState(false);
   const [selectedDay, setSelectedDay] = useState(
     availability.month.firstAvailableDay,
@@ -54,7 +52,11 @@ export default function PublicBookingSection({ page, previewMode = false }) {
   });
   const [status, setStatus] = useState({ message: "", state: "idle" });
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [bookedTimes, setBookedTimes] = useState([]);
+  const [bookedIntervals, setBookedIntervals] = useState([]);
+  const [legacyBookedTimes, setLegacyBookedTimes] = useState([]);
+  const [intervalProtectionReady, setIntervalProtectionReady] = useState(false);
+  const [conflictTimes, setConflictTimes] = useState([]);
+  const [availabilityVersion, setAvailabilityVersion] = useState(0);
   const [bookedTimesError, setBookedTimesError] = useState("");
   const [isLoadingBookedTimes, setIsLoadingBookedTimes] = useState(false);
   const selectedDateKey = selectedDay ? `${availability.month.key}-${String(selectedDay).padStart(2, "0")}` : "";
@@ -62,6 +64,9 @@ export default function PublicBookingSection({ page, previewMode = false }) {
     day: "numeric", month: "long", weekday: "long", timeZone: "UTC",
   }).format(new Date(`${selectedDateKey}T12:00:00Z`)) : "";
   const slots = availableTimes(page.availability);
+  const bookedTimes = [...(intervalProtectionReady ? occupiedTimes({ dateKey: selectedDateKey, times: slots, timeZone,
+    durationMinutes: serviceDurationMinutes(page.services.find((service) => service.name === selectedService)),
+    intervals: bookedIntervals, resolveInstant: appointmentIso }) : legacyBookedTimes), ...conflictTimes];
   const selectedTimeIsBooked = bookedTimes.includes(selectedTime);
   const currentStep = getCurrentStep({
     hasSelectedDay,
@@ -107,14 +112,17 @@ export default function PublicBookingSection({ page, previewMode = false }) {
           );
         }
 
-        setBookedTimes(
-          Array.isArray(result.bookedAppointmentAts)
-            ? result.bookedAppointmentAts.map((value) => timeInZone(value, timeZone))
-            : [],
-        );
+        if (result.intervalProtectionReady && (!Array.isArray(result.bookedIntervals) || result.bookedIntervals.some((item) =>
+          !Number.isFinite(Date.parse(item.appointment_at)) || !Number.isFinite(Date.parse(item.appointment_end_at))))) {
+          throw new Error("No se pudo validar la disponibilidad. Inténtalo de nuevo.");
+        }
+        setIntervalProtectionReady(result.intervalProtectionReady === true);
+        setBookedIntervals(result.bookedIntervals ?? []);
+        setLegacyBookedTimes((result.bookedAppointmentAts ?? []).map((value) => timeInZone(value, timeZone)));
+        setConflictTimes([]);
       } catch (error) {
         if (error.name !== "AbortError") {
-          setBookedTimes([]);
+          setBookedIntervals([]);
           setBookedTimesError(error.message);
         }
       } finally {
@@ -127,7 +135,7 @@ export default function PublicBookingSection({ page, previewMode = false }) {
     fetchBookedTimes();
 
     return () => controller.abort();
-  }, [hasSelectedDay, page.slug, previewMode, selectedDateKey, timeZone]);
+  }, [availabilityVersion, hasSelectedDay, page.slug, previewMode, selectedDateKey, timeZone]);
 
   const updateField = (key, value) => {
     setFormData((current) => ({ ...current, [key]: value }));
@@ -179,10 +187,11 @@ export default function PublicBookingSection({ page, previewMode = false }) {
           state: "error",
         });
         if (response.status === 409 && selectedTime) {
-          setBookedTimes((current) =>
+          setConflictTimes((current) =>
             current.includes(selectedTime) ? current : [...current, selectedTime],
           );
           setSelectedTime("");
+          setAvailabilityVersion((version) => version + 1);
         }
         return;
       }
@@ -198,9 +207,13 @@ export default function PublicBookingSection({ page, previewMode = false }) {
         message: "Reserva creada correctamente. El profesional la vera en su panel.",
         state: "success",
       });
-      setBookedTimes((current) =>
+      setConflictTimes((current) =>
         current.includes(selectedTime) ? current : [...current, selectedTime],
       );
+      setBookedIntervals((current) => [...current, {
+        appointment_at: instant,
+        appointment_end_at: appointmentEnd(instant, serviceDurationMinutes(page.services.find((service) => service.name === selectedService))),
+      }]);
       setIsSuccessModalOpen(true);
     } catch (error) {
       setStatus({ message: error.message || "No se pudo conectar. Intentalo de nuevo.", state: "error" });
@@ -345,7 +358,9 @@ export default function PublicBookingSection({ page, previewMode = false }) {
                     setSelectedDay(dayNumber);
                     setHasSelectedDay(true);
                     setSelectedTime("");
-                    setBookedTimes([]);
+                    setBookedIntervals([]);
+                    setLegacyBookedTimes([]);
+                    setConflictTimes([]);
                     setBookedTimesError("");
                     setIsLoadingBookedTimes(!previewMode);
                   }}
@@ -375,10 +390,13 @@ export default function PublicBookingSection({ page, previewMode = false }) {
                 ) : null}
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {slots.map((time) => {
-                    const isBooked = bookedTimes.includes(time);
                     const isSelected = selectedTime === time;
                     const instant = appointmentIso(selectedDateKey, time, timeZone);
-                    const isDisabled = isBooked || isLoadingBookedTimes || Boolean(bookedTimesError) || !instant || new Date(instant) <= new Date();
+                    const duration = serviceDurationMinutes(page.services.find((service) => service.name === selectedService));
+                    const closing = appointmentIso(selectedDateKey, page.availability.end, timeZone);
+                    const exceedsClosing = !duration || !closing || !instant || Date.parse(instant) + duration * 60000 > Date.parse(closing);
+                    const isBooked = bookedTimes.includes(time);
+                    const isDisabled = exceedsClosing || isBooked || isLoadingBookedTimes || Boolean(bookedTimesError) || !instant || new Date(instant) <= new Date();
 
                     return (
                       <button

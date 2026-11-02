@@ -114,7 +114,7 @@ export default function usePageEditor() {
   const updateService = (id, key, value) => {
     setServices((current) =>
       current.map((service) =>
-        service.id === id ? { ...service, [key]: value } : service,
+        service.id === id ? { ...service, [key]: value, ...(key === "duration" ? { durationMinutes: undefined } : {}) } : service,
       ),
     );
   };

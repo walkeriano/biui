@@ -15,7 +15,7 @@ export default function AppearanceSection({
   updateData,
 }) {
   return (
-    <article className="rounded-card border border-line bg-surface p-4 shadow-card">
+    <article className="overflow-hidden rounded-card border border-black bg-black shadow-card">
       <SectionHeader
         icon={faPalette}
         isOpen={isOpen}
@@ -25,7 +25,7 @@ export default function AppearanceSection({
       />
 
       {isOpen ? (
-        <div className="mt-4">
+        <div className="page-editor-content bg-black p-4">
           <div className="grid gap-5">
             <ImagePicker
               label="Logo de la empresa"

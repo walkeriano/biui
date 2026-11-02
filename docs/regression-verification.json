@@ -1,0 +1,152 @@
+{
+  "checkedAt": "2026-10-26T19:14:25.164Z",
+  "runId": "eeeb946b",
+  "artifactDir": "/private/tmp/biui-regression-eeeb946b",
+  "results": [
+    {
+      "name": "Anonymous dashboard access remains protected",
+      "status": "passed"
+    },
+    {
+      "name": "Registration validates mandatory fields and password length without sending emails",
+      "status": "passed"
+    },
+    {
+      "name": "Create two disposable accounts with real backend authentication and no email",
+      "status": "passed"
+    },
+    {
+      "name": "Live backend migration status",
+      "status": "passed",
+      "detail": {
+        "intervalProtectionReady": false
+      }
+    },
+    {
+      "name": "Full interval protection and live rescheduling",
+      "status": "blocked",
+      "detail": "The operator has not applied appointment-intervals.sql; existing booking compatibility is tested below."
+    },
+    {
+      "name": "Live Storage hardening",
+      "status": "blocked",
+      "detail": "production-hardening.sql remains pending; no remote configuration was changed."
+    },
+    {
+      "name": "Draft pages and another owner stay isolated",
+      "status": "passed"
+    },
+    {
+      "name": "Login handles invalid credentials and then opens the real dashboard",
+      "status": "passed"
+    },
+    {
+      "name": "Hero fields and local image preview update the page preview",
+      "status": "passed"
+    },
+    {
+      "name": "Unsaved text and image survive navigation between dashboard sections",
+      "status": "passed"
+    },
+    {
+      "name": "Dismiss sign-out warning keeps the editor and its unsaved changes",
+      "status": "passed"
+    },
+    {
+      "name": "Dismiss reload warning keeps unsaved editor changes",
+      "status": "passed"
+    },
+    {
+      "name": "Appearance, about, service and contact sections can be edited",
+      "status": "passed"
+    },
+    {
+      "name": "Preview switches between mobile and desktop without losing edits",
+      "status": "passed"
+    },
+    {
+      "name": "Publish persists text, services, appearance and compressed image in real Supabase",
+      "status": "passed"
+    },
+    {
+      "name": "Published public page renders content, image and contact links on mobile",
+      "status": "passed"
+    },
+    {
+      "name": "Availability failures block slots and the visitor can go back and retry",
+      "status": "passed"
+    },
+    {
+      "name": "Booking handles a submit network error and allows a successful retry",
+      "status": "passed"
+    },
+    {
+      "name": "Bookings and professional-page writes stay isolated from another owner",
+      "status": "passed"
+    },
+    {
+      "name": "Reservation appears in dashboard and can be confirmed through the UI",
+      "status": "passed"
+    },
+    {
+      "name": "Reschedule form loads services and validates changes without losing the booking",
+      "status": "passed"
+    },
+    {
+      "name": "Cancel dialogue can be dismissed, then cancellation frees the booked slot",
+      "status": "passed"
+    },
+    {
+      "name": "Public availability returns no personal data and cancellation frees 09:00",
+      "status": "passed"
+    },
+    {
+      "name": "Two simultaneous real bookings still yield one creation and one conflict",
+      "status": "passed"
+    },
+    {
+      "name": "Migrated calendar UI blocks full durations and invalid late starts (simulated availability)",
+      "status": "passed"
+    },
+    {
+      "name": "Republishing updates the public URL, content and dashboard link",
+      "status": "passed"
+    },
+    {
+      "name": "Reloaded editor hydrates the last saved page without losing published values",
+      "status": "passed"
+    },
+    {
+      "name": "Mobile dashboard navigation remains usable and has no horizontal overflow",
+      "status": "passed"
+    },
+    {
+      "name": "Real recovery token opens the password form and mismatches are rejected",
+      "status": "passed"
+    },
+    {
+      "name": "Invalid recovery link provides a return to the login form",
+      "status": "passed"
+    },
+    {
+      "name": "Real sign-out removes dashboard access",
+      "status": "passed"
+    },
+    {
+      "name": "Withdrawing the disposable page removes public access and rejects new bookings",
+      "status": "passed"
+    },
+    {
+      "name": "No uncaught JavaScript errors during the full browser workflow",
+      "status": "passed"
+    },
+    {
+      "name": "Remove this run’s temporary files, page, reservations and account",
+      "status": "passed"
+    },
+    {
+      "name": "Remove this run’s temporary files, page, reservations and account",
+      "status": "passed"
+    }
+  ]
+}

@@ -36,6 +36,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ## Supabase
 
+Para las tareas altas y medias implementadas el 26 de octubre, consulta [cambios, orden de migración y verificación](docs/high-medium-delivery.md). La migración se aplica manualmente; el código mantiene el flujo anterior de reservas hasta instalarla. La recuperación requiere permitir `/auth/confirm` en las Redirect URLs de Supabase.
+
 Revisa y ejecuta `supabase/schema.sql` en staging antes de producción para crear o actualizar:
 
 - `public.professional_pages`
@@ -74,7 +76,7 @@ El bucket `profesional-assets` es publico para lectura. La escritura queda limit
 
 La zona horaria por defecto para disponibilidad es `Europe/Madrid`. Tanto el navegador como la API usan la zona del profesional. El calendario permite seleccionar fechas hasta doce meses hacia adelante.
 
-El índice único evita reservas activas con el mismo instante de inicio; todavía no protege solapamientos según la duración del servicio. El rate limit actual vive en memoria de cada proceso y requiere protección compartida antes de escalar a varias instancias.
+El índice único evita reservas activas con el mismo instante de inicio. Al aplicar `supabase/appointment-intervals.sql`, una restricción adicional impide solapamientos según la duración completa del servicio. Hasta aplicarla se conserva el comportamiento anterior. El rate limit actual vive en memoria de cada proceso y requiere protección compartida antes de escalar a varias instancias.
 
 ## Cache
 

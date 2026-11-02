@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Login from "@/components/auth/Login/Login";
 import Register from "@/components/auth/Register/Register";
@@ -12,7 +13,8 @@ const modes = [
 ];
 
 export default function AuthPanel() {
-  const [activeMode, setActiveMode] = useState("register");
+  const params = useSearchParams();
+  const [activeMode, setActiveMode] = useState(() => params.get("mode") === "login" ? "login" : "register");
   const isRegister = activeMode === "register";
 
   return (

@@ -61,7 +61,7 @@ export default function useAuthActions() {
       if (client.error) return client;
 
       return client.supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/acceso`,
+        redirectTo: `${window.location.origin}/auth/confirm`,
       });
     },
     [ensureClient],

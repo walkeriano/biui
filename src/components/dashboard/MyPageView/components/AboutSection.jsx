@@ -17,7 +17,7 @@ export default function AboutSection({
   updateData,
 }) {
   return (
-    <article className="rounded-card border border-line bg-surface p-4 shadow-card">
+    <article className="overflow-hidden rounded-card border border-black bg-black shadow-card">
       <SectionHeader
         icon={faUser}
         isOpen={isOpen}
@@ -27,7 +27,7 @@ export default function AboutSection({
       />
 
       {isOpen ? (
-        <div className="mt-4 grid gap-5">
+        <div className="page-editor-content bg-black p-4 grid gap-5">
           <ImagePicker
             label="Foto de perfil"
             image={profileImage}

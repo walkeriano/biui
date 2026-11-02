@@ -189,7 +189,7 @@ try {
   record('Landing booking is created and visible only to its professional', true);
 
   await check('Direct anonymous inserts cannot bypass the booking API', async () => {
-    const result = await anon.from('appointments').insert({ professional_user_id: users[0].id, professional_page_id: pageRow.id, customer_name: 'Cliente Temporal', customer_phone: '600000000', service_name: 'Consulta de prueba', appointment_at: new Date(Date.parse(appointments[0].appointment_at) + 7200000).toISOString() });
+    const result = await anon.from('appointments').insert({ professional_user_id: users[0].id, professional_page_id: pageRow.id, customer_name: 'Cliente Temporal', customer_phone: '600000000', service_name: 'Consulta de prueba', duration_minutes: 50, appointment_at: new Date(Date.parse(appointments[0].appointment_at) + 7200000).toISOString() });
     assert.ok(result.error, 'Anonymous insert bypassed API');
   });
   const body = { slug, serviceName: 'Consulta de prueba', selectedTime: '10:00', appointmentAt: new Date(Date.parse(appointments[0].appointment_at) + 3600000).toISOString(), customerName: 'Carrera Temporal', customerPhone: '600000000' };

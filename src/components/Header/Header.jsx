@@ -9,7 +9,7 @@ import { faBars, faRightToBracket, faUserPlus, faXmark } from "@/lib/fontawesome
 const navigation = [
   { label: "Inicio", href: "#inicio" },
   { label: "Beneficios", href: "#beneficios" },
-  { label: "Suscripción", href: "#suscripcion" },
+  { label: "Funciones", href: "#suscripcion" },
   { label: "Atención al cliente", href: "#atencion" },
 ];
 

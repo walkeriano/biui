@@ -1,4 +1,5 @@
 import { buildTimeSlots } from "./availability.js";
+import { appointmentEnd, serviceDurationMinutes } from "./appointmentIntervals.js";
 
 export const defaultTimeZone = "Europe/Madrid";
 const dayNames = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
@@ -87,6 +88,13 @@ export function validateBooking({ appointmentAt, availability, selectedTime, ser
   }
   if (!availableTimes(availability).includes(selectedTime)) {
     return "El horario seleccionado no esta disponible.";
+  }
+  const service = services.find((item) => item.name === serviceName);
+  const duration = serviceDurationMinutes(service);
+  if (!duration) return "El servicio no tiene una duracion valida en minutos.";
+  const closing = appointmentIso(dateKey, availability.end, zone);
+  if (!closing || Date.parse(appointmentEnd(appointmentAt, duration)) > Date.parse(closing)) {
+    return "El servicio debe terminar dentro del horario del profesional.";
   }
   return "";
 }

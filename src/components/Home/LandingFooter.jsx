@@ -6,7 +6,7 @@ import { faArrowRight } from "@/lib/fontawesome";
 const footerLinks = [
   { label: "Inicio", href: "#inicio" },
   { label: "Beneficios", href: "#beneficios" },
-  { label: "Suscripción", href: "#suscripcion" },
+  { label: "Funciones", href: "#suscripcion" },
   { label: "Atención al cliente", href: "#atencion" },
 ];
 

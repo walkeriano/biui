@@ -35,6 +35,8 @@ export default function DashboardShell() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isNavCollapsed, setIsNavCollapsed] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [editorMounted, setEditorMounted] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { user } = useAuth();
   const { signOut } = useAuthActions();
   const publicPageLink = useCurrentPublicPageLink();
@@ -50,11 +52,13 @@ export default function DashboardShell() {
     .toUpperCase();
 
   const handleViewChange = (viewId) => {
+    if (viewId === "page") setEditorMounted(true);
     setActiveView(viewId);
     setIsNavOpen(false);
   };
 
   const handleSignOut = async () => {
+    if (hasUnsavedChanges && !window.confirm("Tienes cambios sin publicar. ¿Quieres cerrar sesión y descartarlos?")) return;
     setIsSigningOut(true);
     const { error } = await signOut();
 
@@ -127,7 +131,12 @@ export default function DashboardShell() {
             </div>
           </div>
 
-          <ActiveView onViewChange={handleViewChange} />
+          {editorMounted ? (
+            <div hidden={activeView !== "page"}>
+              <MyPageView onViewChange={handleViewChange} onDirtyChange={setHasUnsavedChanges} />
+            </div>
+          ) : null}
+          {activeView !== "page" ? <ActiveView onViewChange={handleViewChange} /> : null}
         </section>
       </div>
     </main>

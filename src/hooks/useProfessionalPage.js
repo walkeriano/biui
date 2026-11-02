@@ -14,6 +14,7 @@ import {
 } from "@/lib/professionalPage/mapper";
 import { getFallbackSlug, isReservedSlug, sanitizeSlug } from "@/lib/slug";
 import { buildTimeSlots } from "@/lib/availability";
+import { serviceDurationMinutes } from "@/lib/appointmentIntervals";
 
 const pageCacheTtl = 5 * 60 * 1000;
 
@@ -110,6 +111,9 @@ export default function useProfessionalPage() {
       }
       if (!payload.services.length || payload.services.some((service) => !service.name?.trim())) {
         return { error: { message: "Agrega al menos un servicio con nombre antes de publicar." } };
+      }
+      if (payload.services.some((service) => !serviceDurationMinutes(service))) {
+        return { error: { message: "Indica una duracion valida para cada servicio." } };
       }
       if (!buildTimeSlots(data.scheduleStart, data.scheduleEnd).length) {
         return { error: { message: "El horario de fin debe ser posterior al inicio." } };

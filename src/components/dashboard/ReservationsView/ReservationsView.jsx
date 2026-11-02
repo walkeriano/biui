@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAuth } from "@/context/AuthContext";
+import RescheduleForm from "./RescheduleForm";
 import { dateKeyInZone, dayRangeInZone, defaultTimeZone } from "@/lib/booking";
 import {
   getUserCacheKey,
   readLocalCache,
   writeLocalCache,
+  clearLocalCache,
 } from "@/lib/localCache";
 import {
   faCalendarDays,
@@ -29,6 +31,9 @@ export default function ReservationsView() {
   const { supabase, user } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [error, setError] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [busyId, setBusyId] = useState("");
+  const [editingId, setEditingId] = useState("");
   const [isLoading, setIsLoading] = useState(Boolean(supabase && user));
 
   const fetchAppointments = useCallback(async () => {
@@ -43,7 +48,7 @@ export default function ReservationsView() {
     const { data, error: fetchError } = await supabase
       .from("appointments")
       .select(
-        "id,customer_email,customer_name,customer_phone,service_name,appointment_at,status,notes,created_at",
+        "id,professional_page_id,customer_email,customer_name,customer_phone,service_name,appointment_at,status,notes,created_at",
       )
       .eq("professional_user_id", user.id)
       .gte("appointment_at", dayRangeInZone(dateKeyInZone(new Date())).start)
@@ -86,10 +91,34 @@ export default function ReservationsView() {
 
   const summary = useMemo(() => buildSummary(appointments), [appointments]);
 
+  async function changeAppointment(appointment, changes) {
+    if (busyId) return;
+    if (changes.action === "cancel" && !window.confirm(`¿Cancelar la cita de ${appointment.customer_name}? El horario quedará libre.`)) return;
+    setBusyId(appointment.id);
+    setError("");
+    setFeedback("");
+    try {
+      const response = await fetch("/api/appointments", { method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: appointment.id, ...changes }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "No se pudo actualizar la reserva.");
+      clearLocalCache(getUserCacheKey(user, "dashboard-summary"));
+      clearLocalCache(getUserCacheKey(user, "appointments"));
+      setEditingId("");
+      await fetchAppointments();
+      setFeedback(changes.action === "cancel" ? "Reserva cancelada. El horario está libre." : changes.action === "confirm" ? "Reserva confirmada." : "Reserva reprogramada.");
+    } catch (error) {
+      setError(error.message || "No se pudo conectar. Inténtalo de nuevo.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
   return (
     <div className="grid gap-5">
+      {feedback ? <p role="status" className="rounded-card bg-success-soft px-4 py-3 text-sm font-bold text-success">{feedback}</p> : null}
       {error ? (
-        <p className="rounded-card border border-line bg-surface px-4 py-3 text-sm font-bold text-danger shadow-card">
+        <p role="alert" className="rounded-card border border-line bg-surface px-4 py-3 text-sm font-bold text-danger shadow-card">
           {error}
         </p>
       ) : null}
@@ -178,6 +207,13 @@ export default function ReservationsView() {
                     ) : null}
                     {formatStatus(appointment.status)}
                   </span>
+                  <div className="flex flex-wrap gap-2 lg:col-span-full">
+                    {isPending ? <button type="button" className="min-h-11 rounded-md bg-success-soft px-3 font-bold text-success disabled:opacity-50" disabled={Boolean(busyId)} onClick={() => changeAppointment(appointment, { action: "confirm" })}>Confirmar</button> : null}
+                    <button type="button" className="min-h-11 rounded-md border border-line px-3 font-bold disabled:opacity-50" disabled={Boolean(busyId)} onClick={() => { setEditingId(appointment.id); setError(""); setFeedback(""); }}>Reprogramar</button>
+                    <button type="button" className="min-h-11 rounded-md border border-line px-3 font-bold text-danger disabled:opacity-50" disabled={Boolean(busyId)} onClick={() => changeAppointment(appointment, { action: "cancel" })}>Cancelar cita</button>
+                    {busyId === appointment.id ? <span role="status" className="self-center text-muted">Guardando...</span> : null}
+                  </div>
+                  {editingId === appointment.id ? <div className="lg:col-span-full"><RescheduleForm appointment={appointment} busy={Boolean(busyId)} onCancel={() => setEditingId("")} onSave={(changes) => changeAppointment(appointment, changes)} /></div> : null}
                 </article>
               );
             })}

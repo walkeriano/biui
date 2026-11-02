@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Suspense } from "react";
 import Link from "next/link";
 import AuthPanel from "@/components/auth/AuthPanel/AuthPanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -50,7 +51,7 @@ export default function AccesoPage() {
           </p>
         </div>
 
-        <AuthPanel />
+        <Suspense fallback={<p>Cargando acceso...</p>}><AuthPanel /></Suspense>
       </section>
     </main>
   );

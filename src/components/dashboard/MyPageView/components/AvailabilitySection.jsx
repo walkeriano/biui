@@ -15,7 +15,7 @@ export default function AvailabilitySection({
   updateData,
 }) {
   return (
-    <article className="rounded-card border border-line bg-surface p-4 shadow-card">
+    <article className="overflow-hidden rounded-card border border-black bg-black shadow-card">
       <SectionHeader
         icon={faCalendarDays}
         isOpen={isOpen}
@@ -25,7 +25,7 @@ export default function AvailabilitySection({
       />
 
       {isOpen ? (
-        <div className="mt-4 grid gap-4">
+        <div className="page-editor-content bg-black p-4 grid gap-4">
           <Field label="Dias disponibles">
             <div className="grid grid-cols-4 gap-2">
               {weekDays.map((day) => {
